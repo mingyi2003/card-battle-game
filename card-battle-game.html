@@ -421,14 +421,14 @@
     transform:translate(-50%,-50%) scale(var(--bs,1))}
   .gacha-stage .gacha-cur{position:absolute;left:50%;transform:translateX(-50%);top:20px;z-index:2;
     background:rgba(0,0,0,.35);border:1px solid rgba(240,199,94,.35);border-radius:20px;padding:6px 18px;font-size:14px}
-  .gacha-stage .gacha-pack{position:absolute;left:50%;transform:translateX(-50%);top:110px;width:112px;height:168px;margin:0;z-index:2}
+  .gacha-stage .gacha-pack{position:absolute;left:50%;transform:translateX(-50%);top:118px;width:96px;height:144px;margin:0;z-index:2}
   .gacha-stage .gacha-odds{position:absolute;left:50%;transform:translateX(-50%);top:320px;margin:0;z-index:2;
     color:#f6e3b8;text-shadow:0 1px 3px #000;font-size:13px;white-space:nowrap}
-  .gacha-stage .gacha-result{position:absolute;left:50%;transform:translateX(-50%);top:340px;width:940px;margin:0;z-index:2;
+  .gacha-stage .gacha-result{position:absolute;left:50%;transform:translateX(-50%);top:330px;width:960px;max-width:none;margin:0;z-index:2;
     grid-template-columns:repeat(6,1fr);gap:12px}
   .gacha-stage .gacha-card .bcard .cname{font-size:14px;padding:6px 4px}
   .gacha-stage .gacha-card .bcard .cost,.gacha-stage .gacha-card .bcard .stat{font-size:13px;min-width:28px;height:24px;padding:0 7px}
-  .draw-fx.dfx-lg{width:112px;height:176px}
+  .draw-fx.dfx-lg{width:96px;height:150px}
   .gacha-stage .gacha-btns{position:absolute;left:50%;transform:translateX(-50%);bottom:28px;margin:0;z-index:2;
     display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
   .gacha-card.g-empty{aspect-ratio:9/14;border:1px dashed rgba(230,200,120,.4);border-radius:9px;
@@ -476,7 +476,8 @@
       transform:none!important;margin:0;white-space:normal;text-align:center;line-height:1.5;
       font-size:11px;order:2}
     .gacha-stage .gacha-result{position:relative!important;left:auto!important;top:auto!important;
-      transform:none!important;width:100%;margin:0;order:3;max-width:420px}
+      transform:none!important;width:100%;margin:0;order:3;max-width:372px;
+      grid-template-columns:repeat(3,1fr)!important;gap:10px}
     .gacha-stage .gacha-btns{position:relative!important;left:auto!important;right:auto!important;
       bottom:auto!important;transform:none!important;margin:0;order:4;gap:6px}
     .gacha-stage .gacha-btns .btn{font-size:12px;padding:7px 10px}
