@@ -2187,10 +2187,16 @@ function renderPanels(){
 }
 
 // 卡槽精确对齐背景图中的蓝色/金色方形框（舞台 1500x900 坐标，由像素分析得到）
-const SLOT_FRAMES = {
+const SLOT_FRAMES_DESKTOP = {
+  enemy:  { xs: [487.5, 605.6, 721.9, 830.6, 960.0], ys: [170, 336], w: 92, h: 120 },
+  player: { xs: [483.8, 605.6, 723.8, 847.5, 967.5], ys: [577, 737], w: 92, h: 120 }
+};
+// 手机端：以舞台中线为轴左右对称拉开
+const SLOT_FRAMES_MOBILE = {
   enemy:  { xs: [420, 547, 674, 801, 928], ys: [170, 336], w: 92, h: 120 },
   player: { xs: [420, 547, 674, 801, 928], ys: [577, 737], w: 92, h: 120 }
 };
+const SLOT_FRAMES = () => ((window.innerWidth || 1280) < 900) ? SLOT_FRAMES_MOBILE : SLOT_FRAMES_DESKTOP;
 
 function renderBoard(){
   const selecting = isPlayerTurn() && state.selectedField >= 0 && skillTargeting < 0;
@@ -2203,7 +2209,7 @@ function renderBoard(){
 function renderHalf(side, vt, selecting){
   const isP = side === 'player';
   const field = isP ? state.playerField : state.enemyField;
-  const fr = SLOT_FRAMES[side];
+  const fr = SLOT_FRAMES()[side];
   const box = $(isP ? 'playerHalf' : 'enemyHalf');
   box.innerHTML = '';
   box.style.position = 'absolute';
