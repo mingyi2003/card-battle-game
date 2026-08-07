@@ -450,6 +450,23 @@
   @media (max-width:900px){
     .gacha-result{grid-template-columns:repeat(4,1fr)}
     #viewBattle,#viewGacha{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+    /* 手机版抽卡页：改为纵向流式布局，按钮固定在内容流内可见 */
+    #viewGacha{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+    .gacha-stage{position:relative!important;left:auto!important;top:auto!important;width:100%!important;
+      height:auto!important;transform:none!important;transform-origin:center!important;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+      padding:14px 10px 22px;gap:14px}
+    .gacha-stage .gacha-cur{position:static!important;transform:none!important;margin:0;order:0}
+    .gacha-stage .gacha-pack{position:relative!important;left:auto!important;top:auto!important;
+      transform:none!important;width:112px;height:168px;margin:0;order:1}
+    .gacha-stage .gacha-odds{position:static!important;left:auto!important;top:auto!important;
+      transform:none!important;margin:0;white-space:normal;text-align:center;line-height:1.5;
+      font-size:12px;order:2}
+    .gacha-stage .gacha-result{position:relative!important;left:auto!important;top:auto!important;
+      transform:none!important;width:100%;margin:0;order:3;max-width:420px}
+    .gacha-stage .gacha-btns{position:relative!important;left:auto!important;right:auto!important;
+      bottom:auto!important;transform:none!important;margin:0;order:4;gap:8px}
+    .gacha-stage .gacha-btns .btn{font-size:13px;padding:9px 12px}
     .home-box{padding:24px 18px;max-width:440px;width:90%}
     .home-title{font-size:24px}
     .home-sub{font-size:12px;margin:8px 0 14px}
@@ -461,6 +478,11 @@
     .hero-deck-box{width:150px}
     .hero-deck-slot .bcard{width:108px;height:180px}
     .deck-board{margin-left:8px;margin-right:auto}
+    /* 手机版选卡页：下方英雄卡与普通卡放大（仍比已选卡牌小） */
+    .col-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .col-card{flex:0 0 88px;width:88px;aspect-ratio:9/14}
+    .col-card .cname{font-size:11px}
+    .detail-panel{align-items:center;justify-content:center}
     #viewDeck{overflow-x:auto}
   }
   @media (max-width:720px){
