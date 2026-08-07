@@ -61,13 +61,13 @@
   .view-deck h2 small{color:#b9ad92;font-size:12px;font-weight:400;margin-left:8px}
   .deck-hint{color:#b9ad92;font-size:12px;margin-bottom:10px}
   .deck-top{display:flex;align-items:center;justify-content:center;gap:90px;margin:12px auto 6px}
-  .deck-board{position:relative;width:max-content;padding:24px 28px;border-radius:18px;
+  .deck-board{position:relative;width:max-content;padding:18px 32px 26px;border-radius:18px;
     background:rgba(22,16,10,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     border:1px solid rgba(200,170,255,.4);
     box-shadow:0 12px 28px rgba(0,0,0,.45), inset 0 0 22px rgba(180,140,255,.12)}
   .deck-board::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:18px;
     background:linear-gradient(145deg, rgba(255,255,255,.14), transparent 35%, transparent 68%, rgba(0,0,0,.38))}
-  .deck-slots{display:grid;grid-template-columns:repeat(4,96px);gap:8px;justify-content:center;margin:0}
+  .deck-slots{display:grid;grid-template-columns:repeat(4,96px);gap:8px;justify-content:center;margin:12px 0 0}
   .hero-deck-box{position:relative;width:174px;padding:14px 16px 16px;border-radius:18px;
     background:rgba(22,16,10,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     border:1px solid rgba(200,170,255,.4);
@@ -509,10 +509,11 @@
         <div class="deck-hint">普通卡选择 8 张 · 英雄卡仅可 1 张；点击下方卡牌加入牌组，点击槽位可移除。</div>
         <div class="deck-top">
           <div class="hero-deck-box">
-            <div class="hdb-label">我的牌组</div>
+            <div class="hdb-label">已选英雄</div>
             <div class="hero-deck-slot" id="heroDeckSlot"></div>
           </div>
           <div class="deck-board">
+            <div class="hdb-label">我的牌组</div>
             <div class="deck-slots" id="deckSlots"></div>
           </div>
         </div>
