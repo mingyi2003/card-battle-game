@@ -2188,8 +2188,8 @@ function renderPanels(){
 
 // 卡槽精确对齐背景图中的蓝色/金色方形框（舞台 1500x900 坐标，由像素分析得到）
 const SLOT_FRAMES = {
-  enemy:  { xs: [487.5, 605.6, 721.9, 830.6, 960.0], ys: [170, 336], w: 92, h: 120 },
-  player: { xs: [483.8, 605.6, 723.8, 847.5, 967.5], ys: [577, 737], w: 92, h: 120 }
+  enemy:  { xs: [420, 547, 674, 801, 928], ys: [170, 336], w: 92, h: 120 },
+  player: { xs: [420, 547, 674, 801, 928], ys: [577, 737], w: 92, h: 120 }
 };
 
 function renderBoard(){
@@ -2425,8 +2425,8 @@ function fitScale(){
   const stages = document.querySelectorAll ? document.querySelectorAll('.battle-stage,.gacha-stage') : [];
   for(const el of stages){
     if(vw < 900){
-      // 小屏：按高度缩放，舞台整体居中显示，横向可滑动
-      const s = Math.min(vh / 840, 1.25);
+      // 小屏：完整缩放舞台使其全部可见（允许左右留白，不裁切内容）
+      const s = Math.min(vw / 1500, vh / 900, 1.2);
       if(el.style){
         el.style.left = '50%';
         el.style.top = '0px';
