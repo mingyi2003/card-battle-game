@@ -25,10 +25,11 @@
   /* ---------- 视图切换 ---------- */
   .view{display:none}
   .view.active{display:block}
-  .view-track{display:none;transition:transform .5s cubic-bezier(.4,0,.2,1);width:100%;overflow:hidden;touch-action:pan-y}
+  .view-track{display:none;transition:transform .5s cubic-bezier(.4,0,.2,1)}
   .view-track.active{display:flex}
   .view-track.show-deck{transform:translateX(-100%)}
   .view-track .view{display:block;flex:0 0 100%;min-width:100%}
+  #viewHome{touch-action:pan-y}
   .view.overlay{position:fixed;inset:0;z-index:40;overflow-y:auto;padding:24px 14px;
     background:radial-gradient(120% 90% at 50% 0%, #141d33 0%, #0a0f1d 55%, #060910 100%)}
   #viewBattle{overflow:hidden;padding:0}
