@@ -1586,6 +1586,7 @@ function showView(v){
     $('viewTrack').classList.remove('active');
     $({ levels:'viewLevels', gacha:'viewGacha', battle:'viewBattle', saves:'viewSaves' }[v]).classList.add('active');
   }
+  playBgm(v);
   fitScale();
 }
 
@@ -1971,6 +1972,36 @@ function fitScale(){
     if(el.style && el.style.setProperty) el.style.setProperty('--bs', s.toFixed(4));
   }
 }
+
+/* ================= 背景音乐 ================= */
+const BGM_MAP = { home:'bgmHome', deck:'bgmHome', saves:'bgmHome', levels:'bgmHome', gacha:'bgmGacha', battle:'bgmBattle' };
+let currentBgm = null;
+
+function playBgm(view){
+  const id = BGM_MAP[view];
+  if(!id || currentBgm === id) return;
+  if(currentBgm){
+    const old = $(currentBgm);
+    if(old && old.pause) old.pause();
+  }
+  currentBgm = id;
+  const el = $(id);
+  if(!el || !el.play) return;
+  el.volume = 0.45;
+  const p = el.play();
+  if(p && p.catch) p.catch(()=>{});
+}
+
+function resumeBgm(){
+  if(!currentBgm) return;
+  const el = $(currentBgm);
+  if(el && el.play){
+    const p = el.play();
+    if(p && p.catch) p.catch(()=>{});
+  }
+}
+document.addEventListener('click', resumeBgm, { once:true });
+document.addEventListener('touchstart', resumeBgm, { once:true });
 
 /* ================= 指向性攻击（拖拽瞄准 + 攻击动画） ================= */
 let aim = null;
@@ -2540,5 +2571,8 @@ if('serviceWorker' in navigator){
   try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 }
 </script>
+<audio id="bgmHome" src="audio/bgm-home.wav" loop preload="none"></audio>
+<audio id="bgmGacha" src="audio/bgm-gacha.wav" loop preload="none"></audio>
+<audio id="bgmBattle" src="audio/bgm-battle.wav" loop preload="none"></audio>
 </body>
 </html>
