@@ -2434,13 +2434,13 @@ function fitScale(){
   const stages = document.querySelectorAll ? document.querySelectorAll('.battle-stage,.gacha-stage') : [];
   for(const el of stages){
     if(vw < 900){
-      // 小屏：按高度缩放并靠左上放置，横向可滑动，文字更大更清晰
+      // 小屏：按高度缩放，舞台整体居中显示，横向可滑动
       const s = Math.min(vh / 840, 1.25);
       if(el.style){
-        el.style.left = '0px';
+        el.style.left = '50%';
         el.style.top = '0px';
-        el.style.transformOrigin = 'top left';
-        el.style.transform = 'scale(' + s.toFixed(4) + ')';
+        el.style.transformOrigin = 'top center';
+        el.style.transform = 'translateX(-50%) scale(' + s.toFixed(4) + ')';
       }
     } else {
       const s = Math.min(vw / 1470, vh / 885, 1.5);
