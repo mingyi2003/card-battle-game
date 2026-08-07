@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{min-height:100%}
+  html,body{min-height:100%;overscroll-behavior-x:none}
   body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:#ece5d3;background:#070b14;overflow-x:hidden}
   .room-bg{position:fixed;inset:0;z-index:-3;background:radial-gradient(120% 85% at 50% 0%, #16203a 0%, #0b1120 48%, #060910 100%)}
   .vignette{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(130% 110% at 50% 42%, transparent 52%, rgba(0,0,0,.62) 100%)}
@@ -25,7 +25,7 @@
   /* ---------- 视图切换 ---------- */
   .view{display:none}
   .view.active{display:block}
-  .view-track{display:none;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+  .view-track{display:none;transition:transform .5s cubic-bezier(.4,0,.2,1);width:100%;overflow:hidden;touch-action:pan-y}
   .view-track.active{display:flex}
   .view-track.show-deck{transform:translateX(-100%)}
   .view-track .view{display:block;flex:0 0 100%;min-width:100%}
@@ -416,15 +416,25 @@
 
   @media (max-width:900px){
     .gacha-result{grid-template-columns:repeat(4,1fr)}
-    .home-box{padding:30px 22px}
+    #viewBattle,#viewGacha{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+    .home-box{padding:24px 18px;max-width:440px;width:90%}
+    .home-title{font-size:24px}
+    .home-sub{font-size:12px;margin:8px 0 14px}
+    .home-cur{font-size:12px;padding:5px 12px;margin-bottom:14px}
+    .home-btns .btn{font-size:15px;padding:10px 14px}
+    .home-stats{font-size:11px}
+    .deck-fit{width:auto;min-width:0;padding:10px 8px}
+    .deck-board{margin-left:8px;margin-right:auto}
+    #viewDeck{overflow-x:auto}
   }
   @media (max-width:720px){
     .gacha-result{grid-template-columns:repeat(3,1fr)}
-    .home-title{font-size:28px}
     .chip-sub{display:none}
   }
   @media (max-width:480px){
-    .home-title{font-size:26px}
+    .home-box{padding:20px 14px}
+    .home-title{font-size:21px}
+    .home-btns .btn{font-size:14px;padding:9px 12px}
   }
 </style>
 </head>
@@ -1968,8 +1978,25 @@ function fitScale(){
   }
   const stages = document.querySelectorAll ? document.querySelectorAll('.battle-stage,.gacha-stage') : [];
   for(const el of stages){
-    const s = Math.min(vw / 1500, vh / 900, 1.5);
-    if(el.style && el.style.setProperty) el.style.setProperty('--bs', s.toFixed(4));
+    if(vw < 900){
+      // 小屏：按高度缩放并靠左上放置，横向可滑动，文字更大更清晰
+      const s = Math.min(vh / 900, 1.2);
+      if(el.style){
+        el.style.left = '0px';
+        el.style.top = '0px';
+        el.style.transformOrigin = 'top left';
+        el.style.transform = 'scale(' + s.toFixed(4) + ')';
+      }
+    } else {
+      const s = Math.min(vw / 1500, vh / 900, 1.5);
+      if(el.style){
+        el.style.left = '';
+        el.style.top = '';
+        el.style.transformOrigin = '';
+        el.style.transform = '';
+        if(el.style.setProperty) el.style.setProperty('--bs', s.toFixed(4));
+      }
+    }
   }
 }
 
