@@ -669,15 +669,17 @@ function enemyBoost(){ return eraData().enemyMult; }
 function eraMaxPlay(){ return eraData().maxPlay; }
 function eraScript(L){ return eraData().id === 'tribe' ? L.tribeOrder : L.order; }
 
-function eraDefaultDeck(){
-  if(eraData().id === 'tribe'){
+function eraDefaultDeck(eraIdx){
+  const e = ERAS[eraIdx !== undefined ? eraIdx : eraIndex()];
+  if(e && e.id === 'tribe'){
     return ['tribe_archer','tribe_warrior','tribe_spear','tribe_chief','tribe_slinger','tribe_sabertooth','tribe_shaman','tribe_witchdoctor','tribe_boar','tribe_bear','tribe_mammoth','h_tribe_storm'];
   }
   return ['militia','guard','archer','swordsman','pikeman','knight','crossbowman','musketeer','mage','priest','champion','h_paladin'];
 }
 
-function eraStarterHero(){
-  return eraData().id === 'tribe' ? 'h_tribe_storm' : 'h_paladin';
+function eraStarterHero(eraIdx){
+  const e = ERAS[eraIdx !== undefined ? eraIdx : eraIndex()];
+  return e && e.id === 'tribe' ? 'h_tribe_storm' : 'h_paladin';
 }
 
 function nextEraIndex(){
@@ -708,8 +710,9 @@ function heroDefOf(id){
   return HEROES[id] || TRIBE_HEROES[id] || null;
 }
 
-function isEraCard(id){
-  if(eraData().id === 'tribe') return !!TRIBE_NORMAL_CARDS[id] || !!TRIBE_HEROES[id];
+function isEraCard(id, eraIdx){
+  const e = ERAS[eraIdx !== undefined ? eraIdx : eraIndex()];
+  if(e && e.id === 'tribe') return !!TRIBE_NORMAL_CARDS[id] || !!TRIBE_HEROES[id];
   return !!NORMAL_PLAYER_CARDS[id] || !!HEROES[id];
 }
 
@@ -939,9 +942,11 @@ function sanitizeProfile(d){
   if(!ERAS[p.era] || !ERAS[p.era].enabled) p.era = 0;
   if(!p.firstWin || p.firstWin.length !== LEVELS.length) p.firstWin = LEVELS.map(()=>false);
   if(!p.heroes || typeof p.heroes !== 'object') p.heroes = defaultProfile().heroes;
-  if(Array.isArray(p.deck)) p.deck = p.deck.filter(id => !id || isEraCard(id));
+  const starter = eraStarterHero(p.era);
+  if(!p.heroes[starter]) p.heroes[starter] = { tier:1, shards:0 };
+  if(Array.isArray(p.deck)) p.deck = p.deck.filter(id => !id || isEraCard(id, p.era));
   else p.deck = [];
-  if(p.deck.filter(Boolean).length === 0) p.deck = eraDefaultDeck();
+  if(p.deck.filter(Boolean).length === 0) p.deck = eraDefaultDeck(p.era);
   p.unlocked = Math.min(Math.max(parseInt(p.unlocked, 10) || 1, 1), LEVELS.length);
   return p;
 }
