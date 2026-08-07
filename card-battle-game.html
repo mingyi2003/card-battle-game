@@ -60,11 +60,26 @@
   .view-deck h2{color:#f6dfa0;margin:8px 0 4px;font-size:19px}
   .view-deck h2 small{color:#b9ad92;font-size:12px;font-weight:400;margin-left:8px}
   .deck-hint{color:#b9ad92;font-size:12px;margin-bottom:10px}
-  .deck-board{position:relative;width:max-content;margin:12px auto 6px;padding:20px 24px;
-    background:url('bg-deck.jpg') center/112% no-repeat;border-radius:18px;
-    box-shadow:0 16px 38px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.10), inset 0 0 46px rgba(0,0,0,.38);
+  .deck-top{display:flex;align-items:center;justify-content:center;gap:90px;margin:12px auto 6px}
+  .deck-board{position:relative;width:max-content;padding:22px 26px;
+    background:url('bg-deck.jpg') center/115% no-repeat;
+    filter:drop-shadow(0 18px 30px rgba(0,0,0,.55));
+    clip-path:polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
     transform:perspective(900px) rotateX(2deg)}
-  .deck-slots{display:grid;grid-template-columns:repeat(6,96px);gap:8px;justify-content:center;margin:0}
+  .deck-board::after{content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(145deg, rgba(255,255,255,.14), transparent 35%, transparent 68%, rgba(0,0,0,.38))}
+  .deck-slots{display:grid;grid-template-columns:repeat(4,96px);gap:8px;justify-content:center;margin:0}
+  .hero-deck-box{position:relative;width:174px;padding:14px 16px 16px;border-radius:18px;
+    background:rgba(22,16,10,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(200,170,255,.4);
+    box-shadow:0 12px 28px rgba(0,0,0,.45), inset 0 0 22px rgba(180,140,255,.12)}
+  .hdb-label{text-align:center;font-size:13px;font-weight:800;color:#e6ccff;letter-spacing:2px;margin-bottom:10px;text-shadow:0 0 10px rgba(181,140,255,.6)}
+  .hero-deck-slot{position:relative;display:flex;align-items:center;justify-content:center;min-height:232px;border-radius:14px;padding:6px;cursor:pointer;
+    border:2px solid transparent;
+    background:linear-gradient(#1c1330,#120b20) padding-box, linear-gradient(135deg,#f0c75e,#b58cff 45%,#8b5cf6 60%,#f0c75e) border-box;
+    box-shadow:0 0 18px rgba(181,140,255,.45), 0 0 10px rgba(240,199,94,.35), inset 0 0 18px rgba(0,0,0,.4)}
+  .hero-deck-slot .bcard{width:126px;height:210px}
+  .hero-deck-slot .hdb-empty{color:#8a7ab8;font-size:13px;text-align:center;line-height:1.7;padding:0 6px}
   .deck-slot{position:relative;min-height:0;aspect-ratio:9/14;border:1px dashed rgba(255,255,255,.28);border-radius:10px;
     background:rgba(0,0,0,.35);overflow:hidden;cursor:pointer;transition:.15s}
   .deck-slot:hover{border-color:#f0c75e}
@@ -439,6 +454,9 @@
     .home-btns .btn{font-size:15px;padding:10px 14px}
     .home-stats{font-size:11px}
     .deck-fit{width:auto;min-width:0;padding:10px 8px}
+    .deck-top{gap:18px;flex-wrap:wrap}
+    .hero-deck-box{width:150px}
+    .hero-deck-slot .bcard{width:108px;height:180px}
     .deck-board{margin-left:8px;margin-right:auto}
     #viewDeck{overflow-x:auto}
   }
@@ -489,9 +507,15 @@
       <button id="btnSlideHome" class="slide-arrow right" title="返回主页">▶</button>
       <div class="deck-fit">
         <h2>🃏 选卡页面 <small>每局开局只能使用上方 12 个槽位中的卡牌</small></h2>
-        <div class="deck-hint">点击下方卡牌加入牌组，点击上方槽位可移除该卡。</div>
-        <div class="deck-board">
-          <div class="deck-slots" id="deckSlots"></div>
+        <div class="deck-hint">普通卡选择 8 张 · 英雄卡仅可 1 张；点击下方卡牌加入牌组，点击槽位可移除。</div>
+        <div class="deck-top">
+          <div class="hero-deck-box">
+            <div class="hdb-label">✦ 已选英雄</div>
+            <div class="hero-deck-slot" id="heroDeckSlot"></div>
+          </div>
+          <div class="deck-board">
+            <div class="deck-slots" id="deckSlots"></div>
+          </div>
         </div>
         <div id="cardDetail" class="detail-panel hidden"></div>
         <div class="collection" id="collection"></div>
@@ -672,9 +696,9 @@ function eraScript(L){ return eraData().id === 'tribe' ? L.tribeOrder : L.order;
 function eraDefaultDeck(eraIdx){
   const e = ERAS[eraIdx !== undefined ? eraIdx : eraIndex()];
   if(e && e.id === 'tribe'){
-    return ['tribe_archer','tribe_warrior','tribe_spear','tribe_chief','tribe_slinger','tribe_sabertooth','tribe_shaman','tribe_witchdoctor','tribe_boar','tribe_bear','tribe_mammoth','h_tribe_storm'];
+    return ['tribe_archer','tribe_warrior','tribe_spear','tribe_slinger','tribe_shaman','tribe_witchdoctor','tribe_bear','tribe_mammoth','h_tribe_storm'];
   }
-  return ['militia','guard','archer','swordsman','pikeman','knight','crossbowman','musketeer','mage','priest','champion','h_paladin'];
+  return ['militia','guard','archer','swordsman','pikeman','knight','mage','priest','h_paladin'];
 }
 
 function eraStarterHero(eraIdx){
@@ -728,7 +752,11 @@ const TRIBE_NORMAL_CARDS = {
   tribe_witchdoctor: { id:'tribe_witchdoctor', name:'巫医',       glyph:'heart',    range:'ranged', gold:3, stamina:2, hp:7,  atk:3, tint:'#8fbf7a', rot:0,  flip:false, art:'cards/tribe_witchdoctor.jpg', desc:'通晓草药与巫术的支援者。' },
   tribe_boar:        { id:'tribe_boar',        name:'野猪骑士',   glyph:'beast',    range:'melee',  gold:4, stamina:3, hp:8,  atk:8, tint:'#c8908a', rot:0,  flip:false, art:'cards/tribe_boar.jpg',        desc:'骑着野猪冲锋的骑手。' },
   tribe_bear:        { id:'tribe_bear',        name:'巨熊战士',   glyph:'beast',    range:'melee',  gold:5, stamina:4, hp:12, atk:7, tint:'#9a7a5a', rot:0,  flip:false, art:'cards/tribe_bear.jpg',        desc:'与巨熊并肩作战的肉盾。' },
-  tribe_mammoth:     { id:'tribe_mammoth',     name:'猛犸象骑士', glyph:'beast',    range:'melee',  gold:6, stamina:5, hp:16, atk:6, tint:'#7a8a9a', rot:0,  flip:false, art:'cards/tribe_mammoth.jpg',     desc:'远古巨兽，皮糙肉厚。' }
+  tribe_mammoth:     { id:'tribe_mammoth',     name:'猛犸象骑士', glyph:'beast',    range:'melee',  gold:6, stamina:5, hp:16, atk:6, tint:'#7a8a9a', rot:0,  flip:false, art:'cards/tribe_mammoth.jpg',     desc:'远古巨兽，皮糙肉厚。' },
+  tribe_bonespear:   { id:'tribe_bonespear',   name:'骨矛猎手',   glyph:'spear',    range:'melee',  gold:3, stamina:3, hp:5,  atk:7, tint:'#d8d0b8', rot:0,  flip:false, art:'cards/tribe_bonespear.jpg',   desc:'以骨为矛的猎手，攻击略高于生命。' },
+  tribe_totem:       { id:'tribe_totem',       name:'图腾守护者', glyph:'staff',    range:'melee',  gold:3, stamina:0, hp:10, atk:0, tint:'#c89a5a', rot:0,  flip:false, art:'cards/tribe_totem.jpg',       desc:'建筑：图腾狂暴——我方每次攻击追加该单位 50% 攻击的额外伤害；每回合自损 2 点生命。' },
+  tribe_eagle:       { id:'tribe_eagle',       name:'巨鹰使者',   glyph:'wing',     range:'melee',  gold:5, stamina:4, hp:7,  atk:10, tint:'#8fd8c0', rot:0, flip:false, flying:true, art:'cards/tribe_eagle.jpg', desc:'飞行单位：可攻击任意敌方单位。' },
+  tribe_giant:       { id:'tribe_giant',       name:'原始巨人',   glyph:'cannon',   range:'ranged', gold:6, stamina:5, hp:15, atk:8, tint:'#9a8a6a', rot:0,  flip:false, art:'cards/tribe_giant.jpg',       desc:'掷石：攻击任意 2×2 区域内的全部敌人。' }
 };
 
 /* ================= 原始部落英雄（4 位） ================= */
@@ -827,6 +855,8 @@ const CARD_ART = {
   tribe_slinger:'cards/tribe_slinger.jpg', tribe_sabertooth:'cards/tribe_sabertooth.jpg',
   tribe_shaman:'cards/tribe_shaman.jpg', tribe_witchdoctor:'cards/tribe_witchdoctor.jpg',
   tribe_boar:'cards/tribe_boar.jpg', tribe_bear:'cards/tribe_bear.jpg', tribe_mammoth:'cards/tribe_mammoth.jpg',
+  tribe_bonespear:'cards/tribe_bonespear.jpg', tribe_totem:'cards/tribe_totem.jpg',
+  tribe_eagle:'cards/tribe_eagle.jpg', tribe_giant:'cards/tribe_giant.jpg',
   h_tribe_storm:'cards/h_tribe_storm.jpg', h_tribe_wind:'cards/h_tribe_wind.jpg',
   h_tribe_rhino:'cards/h_tribe_rhino.jpg', h_tribe_moon:'cards/h_tribe_moon.jpg'
 };
@@ -944,9 +974,16 @@ function sanitizeProfile(d){
   if(!p.heroes || typeof p.heroes !== 'object') p.heroes = defaultProfile().heroes;
   const starter = eraStarterHero(p.era);
   if(!p.heroes[starter]) p.heroes[starter] = { tier:1, shards:0 };
-  if(Array.isArray(p.deck)) p.deck = p.deck.filter(id => !id || isEraCard(id, p.era));
-  else p.deck = [];
-  if(p.deck.filter(Boolean).length === 0) p.deck = eraDefaultDeck(p.era);
+  if(Array.isArray(p.deck)){
+    const picked = p.deck.filter(id => id && isEraCard(id, p.era) && !heroDefOf(id)).slice(0, 8);
+    const hero = p.deck.find(id => id && heroDefOf(id) && isEraCard(id, p.era)) || eraStarterHero(p.era);
+    const eraNormals = eraDefaultDeck(p.era).slice(0, 8);
+    p.deck = [];
+    for(let i = 0; i < 8; i++) p.deck.push(picked[i] || eraNormals[i] || '');
+    p.deck.push(hero);
+  } else {
+    p.deck = eraDefaultDeck(p.era);
+  }
   p.unlocked = Math.min(Math.max(parseInt(p.unlocked, 10) || 1, 1), LEVELS.length);
   return p;
 }
@@ -1033,7 +1070,7 @@ function renderSaves(){
       const heroes = Object.keys(p.heroes || {}).length;
       const done = (p.firstWin || []).filter(Boolean).length;
       const eraName = ERAS[p.era] ? ERAS[p.era].name : '原始部落';
-      html += `<div class="save-info">${eraName}时代 · 进度 ${p.unlocked || 1}/10 · 已通关 ${done} 关 · 英雄 ${heroes}<br>🎫 金券 ${p.goldTicket} · 🟣 紫券 ${p.purpleTicket} · 牌组 ${(p.deck || []).filter(Boolean).length}/12</div>`;
+      html += `<div class="save-info">${eraName}时代 · 进度 ${p.unlocked || 1}/10 · 已通关 ${done} 关 · 英雄 ${heroes}<br>🎫 金券 ${p.goldTicket} · 🟣 紫券 ${p.purpleTicket} · 牌组 ${(p.deck || []).filter(Boolean).length}/9</div>`;
       html += `<div class="save-btns"><button class="btn primary" data-act="enter">进入</button><button class="btn" data-act="del">删除</button></div>`;
     } else {
       html += '<div class="save-info">空存档 · 点击创建</div>';
@@ -1115,7 +1152,7 @@ function buildBattleDeck(){
   const deck = [];
   for(const id of profile.deck){
     if(!id) continue;
-    if(HEROES[id]) deck.push(id);
+    if(heroDefOf(id)) deck.push(id);
     else { deck.push(id); deck.push(id); }
   }
   return shuffle(deck);
@@ -1274,6 +1311,19 @@ function startPlayerTurn(){
   }
   // 犀牛战神蓄势持续
   state.playerField.forEach(c => { if(c && c.barb && --c.barb.turns <= 0) c.barb = null; });
+  // 图腾守护者：每回合自损 2 点生命
+  for(let i = 0; i < FIELD_SIZE; i++){
+    const c = state.playerField[i];
+    if(c && c.def.id === 'tribe_totem'){
+      c.hp -= 2;
+      addLog(`【图腾守护者】消耗 2 点生命（剩 ${Math.max(0, c.hp)}）`, 'sys');
+      if(c.hp <= 0){
+        state.playerField[i] = null;
+        state.discard.push(c.def.id);
+        addLog('图腾守护者耗尽生命，图腾狂暴效果消失', 'warn');
+      }
+    }
+  }
   addLog(`—— 第 ${state.turn} 回合 · 你的回合 ——`, 'turn');
   addLog(`获得金币 +${incomeNow()}（${state.player.gold}），体力恢复至 ${state.player.stamina}/${state.player.stamina}`, 'sys');
   const before = state.hand.length;
@@ -1325,7 +1375,7 @@ function validTargets(attackerIdx){
   const enemies = [];
   for(let i = 0; i < FIELD_SIZE; i++) if(state.enemyField[i]) enemies.push(i);
   if(enemies.length){
-    if(card.def.range === RANGE.RANGED){
+    if(card.def.range === RANGE.RANGED || card.def.flying){
       for(const i of enemies) out.push({ type:'card', idx:i });
       out.push({ type:'hero' });
     } else {
@@ -1340,6 +1390,14 @@ function validTargets(attackerIdx){
 
 function effAtk(card){
   return Math.max(1, (card.def.atk - (card.atkDebuff || 0)));
+}
+
+function frenzyActive(){
+  for(let i = 0; i < FIELD_SIZE; i++){
+    const c = state.playerField[i];
+    if(c && c.def.id === 'tribe_totem') return true;
+  }
+  return false;
 }
 
 function killEnemyCard(idx){
@@ -1386,6 +1444,10 @@ function doAttack(attackerIdx, target){
     addLog(`【${card.def.name}】本回合已行动过`, 'warn');
     return;
   }
+  if(card.def.atk <= 0){
+    addLog(`【${card.def.name}】无法攻击`, 'warn');
+    return;
+  }
   const cost = card.def.stamina;
   if(state.player.stamina < cost){
     addLog(`体力不足：【${card.def.name}】攻击需 ${cost} 体力`, 'warn');
@@ -1404,41 +1466,87 @@ function doAttack(attackerIdx, target){
     const dmg = effAtk(card);
     state.enemy.hp = Math.max(0, state.enemy.hp - dmg);
     addLog(`【${card.def.name}】直接攻击对手英雄：-${dmg}（对手 ${state.enemy.hp}/${LEVELS[state.level].enemyHp}）`, 'player');
+    if(frenzyActive()){
+      const extra = Math.max(1, Math.round(effAtk(card) * 0.5));
+      state.enemy.hp = Math.max(0, state.enemy.hp - extra);
+      addLog(`图腾狂暴追加：-${extra}`, 'player');
+    }
   } else {
     const tIdx = target.idx;
-    const enemy = state.enemyField[tIdx];
-    if(!enemy) return;
-    let dmg = effAtk(card);
-    if(state.marked && state.marked.idx === tIdx) dmg = Math.round(dmg * 1.5);   // 鹰眼目标
-    if(enemy.def.id === 'gargoyle') dmg = Math.max(1, dmg - 2);   // 石像鬼：石肤减伤
-    enemy.hp -= dmg;
-    const msg = `【${card.def.name}】攻击【${enemy.def.name}】：-${dmg}`;
-    addLog(msg, 'player');
-    if(enemy.hp <= 0) killEnemyCard(tIdx);
-    if(card.def.splash){
-      const splash = Math.floor(effAtk(card) / 2);
-      if(splash > 0){
-        for(const i of inRow(state.enemyField, rowOf(tIdx))){
-          if(i === tIdx) continue;
-          const other = state.enemyField[i];
-          if(!other) continue;
-          let sd = splash;
-          if(other.def.id === 'gargoyle') sd = Math.max(1, sd - 2);
-          other.hp -= sd;
-          addLog(`【${card.def.name}】溅射【${other.def.name}】：-${sd}`, 'player');
-          if(other.hp <= 0) killEnemyCard(i);
+    if(card.def.id === 'tribe_giant'){
+      // 原始巨人：攻击任意 2×2 区域，四格同时造成 100% 攻击伤害
+      const blockLeft = Math.min(tIdx % 5, 3);
+      let killed = 0;
+      for(let r = 0; r < 2; r++){
+        for(let c = blockLeft; c <= blockLeft + 1; c++){
+          const ci = r * 5 + c;
+          const e = state.enemyField[ci];
+          if(!e) continue;
+          let dmg = effAtk(card);
+          if(state.marked && state.marked.idx === ci) dmg = Math.round(dmg * 1.5);
+          if(e.def.id === 'gargoyle') dmg = Math.max(1, dmg - 2);
+          e.hp -= dmg;
+          addLog(`【${card.def.name}】砸中【${e.def.name}】：-${dmg}`, 'player');
+          if(e.hp <= 0){ killEnemyCard(ci); killed++; }
         }
       }
-    }
-    if(card.hp <= 0){ state.playerField[attackerIdx] = null; state.discard.push(card.def.id); }
-    if(card.def.id === 'warlock'){
-      const s = firstEmptyFront('player');
-      if(s >= 0){
-        const g = SUMMON_CARDS.ghostsword;
-        state.playerField[s] = { def: g, uid: uid(), hp: g.hp, maxHp: g.hp, attacked: false };
-        addLog(`【术士】在我方最前排召唤【幽灵剑士】！`, 'player');
-      } else {
-        addLog(`【术士】我方前排已满，无法召唤幽灵剑士`, 'warn');
+      if(frenzyActive()){
+        for(let r = 0; r < 2; r++){
+          for(let c = blockLeft; c <= blockLeft + 1; c++){
+            const ci = r * 5 + c;
+            const e = state.enemyField[ci];
+            if(!e) continue;
+            const extra = Math.max(1, Math.round(effAtk(card) * 0.5));
+            e.hp -= extra;
+            addLog(`图腾狂暴追加【${e.def.name}】：-${extra}`, 'player');
+            if(e.hp <= 0){ killEnemyCard(ci); killed++; }
+          }
+        }
+      }
+      if(killed > 0) addLog(`原始巨人一击砸碎 ${killed} 个敌人！`, 'gain');
+    } else {
+      const enemy = state.enemyField[tIdx];
+      if(!enemy) return;
+      let dmg = effAtk(card);
+      if(state.marked && state.marked.idx === tIdx) dmg = Math.round(dmg * 1.5);   // 鹰眼目标
+      if(enemy.def.id === 'gargoyle') dmg = Math.max(1, dmg - 2);   // 石像鬼：石肤减伤
+      enemy.hp -= dmg;
+      const msg = `【${card.def.name}】攻击【${enemy.def.name}】：-${dmg}`;
+      addLog(msg, 'player');
+      if(enemy.hp <= 0) killEnemyCard(tIdx);
+      if(card.def.splash){
+        const splash = Math.floor(effAtk(card) / 2);
+        if(splash > 0){
+          for(const i of inRow(state.enemyField, rowOf(tIdx))){
+            if(i === tIdx) continue;
+            const other = state.enemyField[i];
+            if(!other) continue;
+            let sd = splash;
+            if(other.def.id === 'gargoyle') sd = Math.max(1, sd - 2);
+            other.hp -= sd;
+            addLog(`【${card.def.name}】溅射【${other.def.name}】：-${sd}`, 'player');
+            if(other.hp <= 0) killEnemyCard(i);
+          }
+        }
+      }
+      if(frenzyActive()){
+        const e2 = state.enemyField[tIdx];
+        if(e2){
+          const extra = Math.max(1, Math.round(effAtk(card) * 0.5));
+          e2.hp -= extra;
+          addLog(`图腾狂暴追加【${e2.def.name}】：-${extra}`, 'player');
+          if(e2.hp <= 0) killEnemyCard(tIdx);
+        }
+      }
+      if(card.def.id === 'warlock'){
+        const s = firstEmptyFront('player');
+        if(s >= 0){
+          const g = SUMMON_CARDS.ghostsword;
+          state.playerField[s] = { def: g, uid: uid(), hp: g.hp, maxHp: g.hp, attacked: false };
+          addLog(`【术士】在我方最前排召唤【幽灵剑士】！`, 'player');
+        } else {
+          addLog(`【术士】我方前排已满，无法召唤幽灵剑士`, 'warn');
+        }
       }
     }
   }
@@ -1894,11 +2002,16 @@ function renderHome(){
 
 function renderDeck(){
   const slots = $('deckSlots');
-  slots.innerHTML = profile.deck.map((id, i) => {
+  slots.innerHTML = profile.deck.slice(0, 8).map((id, i) => {
     if(!id) return `<div class="deck-slot" data-i="${i}"><span class="slot-num">${i + 1}</span><span class="remove-tag">移除</span></div>`;
     const def = PLAYER_CARDS[id];
     return `<div class="deck-slot" data-i="${i}"><span class="slot-num">${i + 1}</span><span class="remove-tag">移除</span>${cardFaceHTML({ def }, { side: sideOf(id), extra:'', data:'' })}</div>`;
   }).join('');
+  const heroId = profile.deck[8];
+  const heroDef = heroId ? PLAYER_CARDS[heroId] : null;
+  $('heroDeckSlot').innerHTML = heroDef
+    ? cardFaceHTML({ def: heroDef }, { side:'hero', extra:'', data:'' })
+    : '<div class="hdb-empty">未选择英雄<br>点击下方英雄卡添加</div>';
 
   const isTribe = eraData().id === 'tribe';
   const heroes = Object.keys(profile.heroes).filter(id => isTribe ? !!TRIBE_HEROES[id] : !!HEROES[id]);
@@ -2602,17 +2715,28 @@ $('cardDetail').addEventListener('click', e => {
   if(!b || !deckSel) return;
   const act = b.dataset.act;
   if(act === 'adddeck'){
-    const empty = profile.deck.indexOf('');
-    if(empty === -1 && profile.deck.filter(Boolean).length >= 12){ openModal('牌组已满', '12 个槽位已满，请先移除一张卡牌。', '<button class="btn" data-act="close">关闭</button>'); return; }
-    const slot = empty === -1 ? profile.deck.length : empty;
-    profile.deck[slot] = deckSel;
+    if(heroDefOf(deckSel)){
+      profile.deck[8] = deckSel;
+    } else {
+      const normals = profile.deck.slice(0, 8);
+      const empty = normals.indexOf('');
+      if(empty === -1){ openModal('牌组已满', '8 个普通卡槽已满，请先移除一张卡牌。', '<button class="btn" data-act="close">关闭</button>'); return; }
+      profile.deck[empty] = deckSel;
+    }
     saveProfile();
     renderDeck();
   } else if(act === 'remdeck'){
-    const i = profile.deck.indexOf(deckSel);
+    const i = heroDefOf(deckSel) ? 8 : profile.deck.slice(0, 8).indexOf(deckSel);
     if(i >= 0){ profile.deck[i] = ''; saveProfile(); renderDeck(); }
   } else if(act === 'upgrade'){
     upgradeHero(deckSel);
+  }
+});
+$('heroDeckSlot').addEventListener('click', () => {
+  if(profile.deck[8]){
+    profile.deck[8] = '';
+    saveProfile();
+    renderDeck();
   }
 });
 
@@ -2733,6 +2857,7 @@ $('playerHalf').addEventListener('mousedown', e => {
   const i = parseInt(field.dataset.field, 10);
   const card = state.playerField[i];
   if(!card || card.attacked) return;
+  if(card.def.atk <= 0) return;
   if(state.player.stamina < card.def.stamina) return;
   hideInfo();
   e.preventDefault();
