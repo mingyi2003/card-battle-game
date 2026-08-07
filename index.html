@@ -55,7 +55,11 @@
   .slide-arrow:hover{border-color:#f0c75e;box-shadow:0 0 14px rgba(240,199,94,.35)}
 
   /* ---------- 选卡页面 ---------- */
-  .view-deck{padding:0;max-width:none;margin:0;position:relative;height:100vh;overflow-y:auto;overflow-x:hidden}
+  .view-deck{padding:0;max-width:none;margin:0;position:relative;height:100vh;overflow-y:auto;overflow-x:hidden;
+    background:url('bg-deck.jpg') center/cover no-repeat, linear-gradient(180deg,#101a33,#0a1226)}
+  .view-deck::before{content:'';position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 45%, rgba(6,10,22,.12), rgba(4,7,16,.46))}
+  .view-deck .deck-fit{position:relative;z-index:1}
   .deck-fit{width:1280px;height:auto;min-height:100%;margin:0 auto;padding:10px 22px}
   .view-deck h2{color:#f6dfa0;margin:8px 0 4px;font-size:19px}
   .view-deck h2 small{color:#b9ad92;font-size:12px;font-weight:400;margin-left:8px}
