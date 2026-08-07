@@ -414,6 +414,19 @@
   .info-pop .info-desc{color:#b9ad92;margin-top:3px}
   .info-pop .info-state{color:#ffd9a8;margin-top:4px;font-weight:700}
 
+  /* ---------- 对局开场提示 ---------- */
+  #levelIntro{position:fixed;left:50%;top:50%;z-index:120;pointer-events:none;
+    transform:translate(calc(-50% - 120vw),-50%);opacity:0;
+    background:rgba(12,10,6,.8);border:2px solid rgba(240,199,94,.7);border-radius:16px;
+    padding:22px 48px;text-align:center;backdrop-filter:blur(4px);
+    box-shadow:0 16px 44px rgba(0,0,0,.6);
+    transition:transform .6s cubic-bezier(.22,.8,.3,1), opacity .45s}
+  #levelIntro.in{transform:translate(-50%,-50%);opacity:1}
+  #levelIntro.out{transform:translate(calc(-50% + 120vw),-50%);opacity:0}
+  #levelIntro .li-name{font-size:22px;font-weight:800;color:#f6dfa0;letter-spacing:3px}
+  #levelIntro .li-sub{font-size:16px;color:#e8ddc4;margin-top:6px;letter-spacing:1px}
+  #levelIntro.hidden{display:none}
+
   @media (max-width:900px){
     .gacha-result{grid-template-columns:repeat(4,1fr)}
     #viewBattle,#viewGacha{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
@@ -819,6 +832,7 @@ function defaultProfile(){
 /* ================= 存档系统（最多 4 个独立存档） ================= */
 let saves = { slots: [null, null, null, null] };
 let activeSlot = -1;
+let introBusy = false;
 
 function sanitizeProfile(d){
   const p = Object.assign(defaultProfile(), d || {});
@@ -1009,12 +1023,32 @@ function heroUnlocked(id){
   return false;
 }
 
-function newGame(lv){
-  levelIndex = lv;
-  busy = false;
-  stateToken++;
-  skillTargeting = -1;
-  hideInfo();
+function showLevelIntro(){
+  return new Promise(res => {
+    const L = LEVELS[levelIndex];
+    const box = $('levelIntro');
+    if(!box){ res(); return; }
+    box.innerHTML = `<div class="li-name">第 ${L.id} 关</div><div class="li-sub">${L.name}</div>`;
+    box.classList.remove('hidden', 'in', 'out');
+    setTimeout(() => box.classList.add('in'), 450);                     // 暂停后从左中速滑入
+    setTimeout(() => { box.classList.remove('in'); box.classList.add('out'); }, 1700); // 停留 1.25s
+    setTimeout(() => {
+      box.classList.add('hidden');
+      box.classList.remove('in', 'out');
+      res();
+    }, 2300);
+  });
+}
+
+async function newGame(lv){
+  if(introBusy) return;
+  introBusy = true;
+  try{
+    levelIndex = lv;
+    busy = false;
+    stateToken++;
+    skillTargeting = -1;
+    hideInfo();
   const L = LEVELS[lv];
   state = {
     level: lv,
@@ -1039,9 +1073,13 @@ function newGame(lv){
   addLog(`—— ${L.name} ——`, 'turn');
   addLog(`开局随机抽 ${HAND_START} 张手牌；金币 ${state.player.gold}，体力 ${state.player.stamina}/${state.player.stamina}`, 'sys');
   drawCards(HAND_START, false);
+    await showLevelIntro();
   showView('battle');
   renderBattle();
   animateHandDraw(state.hand.map(id => PLAYER_CARDS[id]));
+  } finally {
+    introBusy = false;
+  }
 }
 
 function drawCards(n, announce){
@@ -2601,5 +2639,6 @@ if('serviceWorker' in navigator){
 <audio id="bgmHome" src="audio/bgm-home.mp3" loop preload="none"></audio>
 <audio id="bgmGacha" src="audio/bgm-gacha.mp3" loop preload="none"></audio>
 <audio id="bgmBattle" src="audio/bgm-battle.mp3" loop preload="none"></audio>
+<div id="levelIntro" class="hidden"></div>
 </body>
 </html>
