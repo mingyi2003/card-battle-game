@@ -1,7 +1,6 @@
 // 卡牌对战小游戏 - 离线缓存 Service Worker
-const CACHE = 'cbg-v1';
+const CACHE = 'cbg-v2';
 const ASSETS = [
-  './index.html',
   './card-battle-game.html',
   './bg-home.jpg',
   './bg-battle.jpg',
