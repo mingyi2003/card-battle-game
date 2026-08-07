@@ -735,16 +735,16 @@ const TRIBE_NORMAL_CARDS = {
 const TRIBE_HEROES = {
   h_tribe_storm: { id:'h_tribe_storm', name:'风暴萨满 · 莫古', emoji:'⛈️', glyph:'staff', range:'ranged', hp:11, atk:6, stamina:4, tint:'#8fd0ff', rot:0, flip:false,
     cond:'我方场上单位数 ≥ 3',
-    skill:{ name:'风暴之势', type:'storm', desc:'立即对所有敌方卡牌造成伤害，并持续数回合每回合对所有敌方卡牌造成伤害。', cd:2, staminaCost:5, power:5, dotDmg:2, dotTurns:3 } },
+    skill:{ name:'风暴之势', type:'storm', desc:'立即对所有敌方卡牌造成 8 点伤害，并持续 3 回合每回合对所有敌方卡牌造成 3 点伤害（随阶提升）。', cd:3, staminaCost:6, power:8, dotDmg:3, dotTurns:3 } },
   h_tribe_wind: { id:'h_tribe_wind', name:'风雪领主 · 札尔札特', emoji:'🌨️', glyph:'wind', range:'ranged', hp:9, atk:7, stamina:4, tint:'#b8e8ff', rot:0, flip:false,
     cond:'回合数 ≥ 3',
-    skill:{ name:'鹰眼', type:'mark', desc:'标记一名敌方单位，使其成为“鹰眼目标”，数回合内我方所有单位对其造成的伤害提高 50%。', cd:1, staminaCost:4, markTurns:3 } },
+    skill:{ name:'鹰眼', type:'mark', desc:'标记一名敌方单位 3 回合，期间我方所有单位对其造成的伤害提高 50%。', cd:2, staminaCost:4, markTurns:3 } },
   h_tribe_rhino: { id:'h_tribe_rhino', name:'犀牛战神 · 拉尔萨', emoji:'🦏', glyph:'beast', range:'melee', hp:15, atk:7, stamina:4, tint:'#ffb07a', rot:0, flip:false,
     cond:'我方场上单位数 ≥ 4',
-    skill:{ name:'蛮力冲撞', type:'barb', desc:'蓄势数回合：期间免疫第一次受到的伤害，且对其造成近战伤害的敌方单位会受到反伤。', cd:2, staminaCost:4, barbTurns:3, reflect:2 } },
+    skill:{ name:'蛮力冲撞', type:'barb', desc:'蓄势 3 回合：期间免疫第一次受到的伤害，且对其造成近战伤害的敌方单位每次受到 3 点反伤（随阶提升）。', cd:3, staminaCost:5, barbTurns:3, reflect:3 } },
   h_tribe_moon: { id:'h_tribe_moon', name:'月神祭司 · 尤娜梅尔', emoji:'🌙', glyph:'star', range:'ranged', hp:10, atk:4, stamina:3, tint:'#d0c8ff', rot:0, flip:false,
     cond:'我方场上单位数 ≥ 3',
-    skill:{ name:'祈祷', type:'prayer', desc:'进入一回合祈祷（无法行动且不会被选中）；结束后我方全体获得“神护”（受到伤害 -2），月神庇护期间新入场的卡牌同样获得。', cd:3, staminaCost:3, blessTurns:3, shield:2 } }
+    skill:{ name:'祈祷', type:'prayer', desc:'祈祷 1 回合（无法行动且不会被选中）；结束后月神庇护 3 回合，我方全体获得“神护”（受伤 -3，随阶提升），期间新入场的卡牌同样获得。', cd:4, staminaCost:3, blessTurns:3, shield:3 } }
 };
 
 /* ================= 玩家普通卡牌（20 种，中世纪第三时代数值） ================= */
@@ -1255,13 +1255,15 @@ function startPlayerTurn(){
   }
   // 祈祷结束 -> 月神庇护；庇护持续结算
   let praying = false;
-  state.playerField.forEach(c => { if(c && c.prayer) praying = true; });
+  let prayerTier = 1;
+  state.playerField.forEach(c => { if(c && c.prayer){ praying = true; prayerTier = c.tier || 1; } });
   if(praying){
     state.playerField.forEach(c => { if(c) c.prayer = false; });
     const sk = TRIBE_HEROES.h_tribe_moon.skill;
-    state.moonBless = { turns: sk.blessTurns, shield: sk.shield };
-    state.playerField.forEach(c => { if(c) c.shield = sk.shield; });
-    addLog(`祈祷结束：月神庇护降临！我方全体获得神护（受伤 -${sk.shield}）`, 'player');
+    const m = 1 + 0.2 * (prayerTier - 1);
+    state.moonBless = { turns: sk.blessTurns, shield: Math.max(1, Math.round(sk.shield * m)) };
+    state.playerField.forEach(c => { if(c) c.shield = state.moonBless.shield; });
+    addLog(`祈祷结束：月神庇护降临！我方全体获得神护（受伤 -${state.moonBless.shield}）`, 'player');
   } else if(state.moonBless){
     state.moonBless.turns--;
     if(state.moonBless.turns <= 0){
@@ -1622,6 +1624,7 @@ function activateSkill(slotIdx){
       break;
     }
     case 'storm': {
+      const m = 1 + 0.2 * (hero.tier - 1);
       let killed = 0;
       for(let i = 0; i < FIELD_SIZE; i++){
         const e = state.enemyField[i];
@@ -1630,7 +1633,7 @@ function activateSkill(slotIdx){
         addLog(`【${sk.name}】对【${e.def.name}】：-${st.power}`, 'player');
         if(e.hp <= 0){ killEnemyCard(i); killed++; }
       }
-      state.stormDot = { turns: sk.dotTurns, dmg: sk.dotDmg };
+      state.stormDot = { turns: sk.dotTurns, dmg: Math.max(1, Math.round(sk.dotDmg * m)) };
       addLog(`【${sk.name}】风暴席卷全场！后续 ${sk.dotTurns} 回合持续伤害`, 'player');
       if(killed > 0) addLog(`${sk.name} 消灭 ${killed} 个敌人！`, 'gain');
       break;
@@ -1639,10 +1642,12 @@ function activateSkill(slotIdx){
       skillTargeting = slotIdx;
       addLog(`【${sk.name}】就绪：点击一名敌方卡牌设为鹰眼目标`, 'player');
       break;
-    case 'barb':
-      hero.barb = { turns: sk.barbTurns, immune: true, reflect: sk.reflect };
+    case 'barb': {
+      const m = 1 + 0.2 * (hero.tier - 1);
+      hero.barb = { turns: sk.barbTurns, immune: true, reflect: Math.max(1, Math.round(sk.reflect * m)) };
       addLog(`【${hero.def.name}】发动【${sk.name}】：蓄势 ${sk.barbTurns} 回合，免疫第一次伤害，近战攻击者受反伤`, 'player');
       break;
+    }
     case 'prayer':
       hero.prayer = true;
       hero.attacked = true;
