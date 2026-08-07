@@ -397,7 +397,7 @@
   #viewBattle .banner{position:absolute;left:50%;transform:translateX(-50%);top:42px;width:340px;margin:0;z-index:6}
   .battle-stage .enemy-zone{position:absolute;left:50%;transform:translateX(-50%);top:90px;width:700px;margin:0;z-index:5}
   .battle-stage .board{position:absolute;inset:0;margin:0;z-index:3;pointer-events:none;
-    background:transparent;border:none;box-shadow:none;border-radius:0}
+    max-width:none;width:auto;background:transparent;border:none;box-shadow:none;border-radius:0}
   .battle-stage #enemyHalf{position:absolute;left:487px;top:170px;transform:none;pointer-events:auto}
   .battle-stage .divider{position:absolute;left:50%;transform:translateX(-50%);top:504px;width:600px;height:2px;padding:0;
     font-size:0;color:transparent;background:linear-gradient(90deg, transparent, #d8b25c 28%, #f0c75e 50%, #d8b25c 72%, transparent)}
@@ -468,18 +468,18 @@
     .gacha-stage{position:relative!important;left:auto!important;top:auto!important;width:100%!important;
       height:auto!important;transform:none!important;transform-origin:center!important;
       display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-      padding:14px 10px 22px;gap:14px}
+      padding:10px 10px 18px;gap:10px}
     .gacha-stage .gacha-cur{position:static!important;transform:none!important;margin:0;order:0}
     .gacha-stage .gacha-pack{position:relative!important;left:auto!important;top:auto!important;
-      transform:none!important;width:112px;height:168px;margin:0;order:1}
+      transform:none!important;width:92px;height:138px;margin:0;order:1}
     .gacha-stage .gacha-odds{position:static!important;left:auto!important;top:auto!important;
       transform:none!important;margin:0;white-space:normal;text-align:center;line-height:1.5;
-      font-size:12px;order:2}
+      font-size:11px;order:2}
     .gacha-stage .gacha-result{position:relative!important;left:auto!important;top:auto!important;
       transform:none!important;width:100%;margin:0;order:3;max-width:420px}
     .gacha-stage .gacha-btns{position:relative!important;left:auto!important;right:auto!important;
-      bottom:auto!important;transform:none!important;margin:0;order:4;gap:8px}
-    .gacha-stage .gacha-btns .btn{font-size:13px;padding:9px 12px}
+      bottom:auto!important;transform:none!important;margin:0;order:4;gap:6px}
+    .gacha-stage .gacha-btns .btn{font-size:12px;padding:7px 10px}
     /* 手机版对战页：竖向流式布局，战场与 UI 居中 */
     #viewBattle{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
     .battle-stage{position:relative!important;left:auto!important;top:auto!important;width:100%!important;
