@@ -1,11 +1,13 @@
 // 卡牌对战小游戏 - 离线缓存 Service Worker
-const CACHE = 'cbg-v2';
+const CACHE = 'cbg-v3';
 const ASSETS = [
   './card-battle-game.html',
+  './index.html',
   './bg-home.jpg',
   './bg-battle.jpg',
   './bg-gacha.jpg',
-  './bg-deck.jpg'
+  './bg-deck.jpg',
+  './splash.jpg'
 ];
 
 self.addEventListener('install', e => {
@@ -29,13 +31,12 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if(url.origin !== location.origin) return;
   e.respondWith(
-    caches.match(e.request).then(hit => {
-      if(hit) return hit;
-      return fetch(e.request).then(res => {
+    fetch(e.request)
+      .then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
         return res;
-      }).catch(() => caches.match('./card-battle-game.html'));
-    })
+      })
+      .catch(() => caches.match(e.request).then(hit => hit || caches.match('./index.html')))
   );
 });
