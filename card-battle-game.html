@@ -472,8 +472,8 @@
       <button id="btnSlideDeck" class="slide-arrow left" title="向左滑动到选卡页面">◀</button>
       <div class="home-box">
         <h1 class="home-title">⚔️ 卡牌对战小游戏</h1>
-        <p class="home-sub">对桌卡牌 · 20 兵种 · 5 英雄 · 10 关卡</p>
-        <div class="home-cur">💾 存档 <b id="homeSaveTag">-</b> &nbsp;·&nbsp; 🎫 金券 <b id="goldTicketVal">1</b> &nbsp;·&nbsp; 🟣 紫券 <b id="purpleTicketVal">3</b></div>
+        <p class="home-sub" id="homeSub">对桌卡牌</p>
+        <div class="home-cur">💾 存档 <b id="homeSaveTag">-</b> &nbsp;·&nbsp; ⚔️ 时代 <b id="homeEraTag">原始部落</b> &nbsp;·&nbsp; 🎫 金券 <b id="goldTicketVal">1</b> &nbsp;·&nbsp; 🟣 紫券 <b id="purpleTicketVal">3</b></div>
         <div class="home-btns">
           <button id="btnStart" class="btn primary big">▶ 开始游戏</button>
           <button id="btnGacha" class="btn big">🎴 抽卡页面</button>
@@ -655,28 +655,117 @@ const ATTACK_DELAY = 430;
 const rowOf = i => Math.floor(i / COLS);
 const inRow = (field, row) => { const out=[]; for(let i=0;i<FIELD_SIZE;i++) if(field[i] && rowOf(i)===row) out.push(i); return out; };
 
-/* ================= 玩家普通卡牌（20 种） ================= */
+/* ================= 时代进化 ================= */
+const ERAS = [
+  { id:'tribe',    name:'原始部落', icon:'🪓', era:0, enemyMult:1.0,  maxPlay:2, enabled:true },
+  { id:'egypt',    name:'古埃及',   icon:'🏺', era:1, enemyMult:1.15, maxPlay:3, enabled:false },
+  { id:'medieval', name:'中世纪',   icon:'⚔️', era:2, enemyMult:1.45, maxPlay:3, enabled:true },
+  { id:'modern',   name:'现代',     icon:'🏙️', era:3, enemyMult:1.6,  maxPlay:4, enabled:false }
+];
+
+function eraIndex(){ return profile ? profile.era : 0; }
+function eraData(){ return ERAS[eraIndex()] || ERAS[0]; }
+function enemyBoost(){ return eraData().enemyMult; }
+function eraMaxPlay(){ return eraData().maxPlay; }
+function eraScript(L){ return eraData().id === 'tribe' ? L.tribeOrder : L.order; }
+
+function eraDefaultDeck(){
+  if(eraData().id === 'tribe'){
+    return ['tribe_archer','tribe_warrior','tribe_spear','tribe_chief','tribe_slinger','tribe_sabertooth','tribe_shaman','tribe_witchdoctor','tribe_boar','tribe_bear','tribe_mammoth','h_tribe_storm'];
+  }
+  return ['militia','guard','archer','swordsman','pikeman','knight','crossbowman','musketeer','mage','priest','champion','h_paladin'];
+}
+
+function eraStarterHero(){
+  return eraData().id === 'tribe' ? 'h_tribe_storm' : 'h_paladin';
+}
+
+function nextEraIndex(){
+  for(let i = eraIndex() + 1; i < ERAS.length; i++){
+    if(ERAS[i].enabled) return i;
+  }
+  return -1;
+}
+
+function evolveEra(){
+  const nxt = nextEraIndex();
+  if(nxt < 0) return null;
+  profile.era = nxt;
+  profile.unlocked = 1;
+  profile.firstWin = LEVELS.map(()=>false);
+  profile.deck = eraDefaultDeck();
+  const starter = eraStarterHero();
+  if(!profile.heroes[starter]) profile.heroes[starter] = { tier:1, shards:0 };
+  saveProfile();
+  return ERAS[nxt];
+}
+
+function eraHeroPool(){
+  return eraData().id === 'tribe' ? Object.keys(TRIBE_HEROES) : Object.keys(HEROES);
+}
+
+function heroDefOf(id){
+  return HEROES[id] || TRIBE_HEROES[id] || null;
+}
+
+function isEraCard(id){
+  if(eraData().id === 'tribe') return !!TRIBE_NORMAL_CARDS[id] || !!TRIBE_HEROES[id];
+  return !!NORMAL_PLAYER_CARDS[id] || !!HEROES[id];
+}
+
+/* ================= 原始部落卡牌（11 种，数值保守，含群伤） ================= */
+const TRIBE_NORMAL_CARDS = {
+  tribe_archer:      { id:'tribe_archer',      name:'部落弓箭手', glyph:'bow',      range:'ranged', gold:2, stamina:2, hp:4,  atk:5, tint:'#c8b27a', rot:0,  flip:false, art:'cards/tribe_archer.jpg',      desc:'原始部落的远程猎手。' },
+  tribe_warrior:     { id:'tribe_warrior',     name:'部落勇士',   glyph:'axe',      range:'melee',  gold:2, stamina:2, hp:7,  atk:5, tint:'#d8a878', rot:0,  flip:false, art:'cards/tribe_warrior.jpg',     desc:'身披兽皮的近战勇士。' },
+  tribe_spear:       { id:'tribe_spear',       name:'部落投矛手', glyph:'spear',    range:'ranged', gold:3, stamina:3, hp:5,  atk:6, tint:'#c9a06a', rot:0,  flip:false, art:'cards/tribe_spear.jpg',       desc:'投掷长矛的远程猎手。' },
+  tribe_chief:       { id:'tribe_chief',       name:'部落酋长',   glyph:'helm',     range:'melee',  gold:4, stamina:3, hp:9,  atk:6, tint:'#e8b060', rot:0,  flip:false, art:'cards/tribe_chief.jpg',       desc:'身披羽冠的部落领袖。' },
+  tribe_slinger:     { id:'tribe_slinger',     name:'投石兵',     glyph:'cannon',   range:'ranged', gold:3, stamina:3, hp:5,  atk:5, tint:'#b0a890', rot:0,  flip:false, splash:true, art:'cards/tribe_slinger.jpg',   desc:'抛石群伤：攻击目标及相邻敌人。' },
+  tribe_sabertooth:  { id:'tribe_sabertooth',  name:'剑齿虎驯服者', glyph:'beast',   range:'melee',  gold:4, stamina:3, hp:6,  atk:9, tint:'#9fd8c0', rot:0,  flip:false, art:'cards/tribe_sabertooth.jpg',  desc:'驾驭剑齿虎的凶猛猎手。' },
+  tribe_shaman:      { id:'tribe_shaman',      name:'萨满祭司',   glyph:'staff',    range:'ranged', gold:4, stamina:4, hp:6,  atk:6, tint:'#c07ff0', rot:0,  flip:false, splash:true, art:'cards/tribe_shaman.jpg',      desc:'图腾之力：群体溅射伤害。' },
+  tribe_witchdoctor: { id:'tribe_witchdoctor', name:'巫医',       glyph:'heart',    range:'ranged', gold:3, stamina:2, hp:7,  atk:3, tint:'#8fbf7a', rot:0,  flip:false, art:'cards/tribe_witchdoctor.jpg', desc:'通晓草药与巫术的支援者。' },
+  tribe_boar:        { id:'tribe_boar',        name:'野猪骑士',   glyph:'beast',    range:'melee',  gold:4, stamina:3, hp:8,  atk:8, tint:'#c8908a', rot:0,  flip:false, art:'cards/tribe_boar.jpg',        desc:'骑着野猪冲锋的骑手。' },
+  tribe_bear:        { id:'tribe_bear',        name:'巨熊战士',   glyph:'beast',    range:'melee',  gold:5, stamina:4, hp:12, atk:7, tint:'#9a7a5a', rot:0,  flip:false, art:'cards/tribe_bear.jpg',        desc:'与巨熊并肩作战的肉盾。' },
+  tribe_mammoth:     { id:'tribe_mammoth',     name:'猛犸象骑士', glyph:'beast',    range:'melee',  gold:6, stamina:5, hp:16, atk:6, tint:'#7a8a9a', rot:0,  flip:false, art:'cards/tribe_mammoth.jpg',     desc:'远古巨兽，皮糙肉厚。' }
+};
+
+/* ================= 原始部落英雄（4 位） ================= */
+const TRIBE_HEROES = {
+  h_tribe_storm: { id:'h_tribe_storm', name:'风暴萨满 · 莫古', emoji:'⛈️', glyph:'staff', range:'ranged', hp:11, atk:6, stamina:4, tint:'#8fd0ff', rot:0, flip:false,
+    cond:'我方场上单位数 ≥ 3',
+    skill:{ name:'风暴之势', type:'storm', desc:'立即对所有敌方卡牌造成伤害，并持续数回合每回合对所有敌方卡牌造成伤害。', cd:2, staminaCost:5, power:5, dotDmg:2, dotTurns:3 } },
+  h_tribe_wind: { id:'h_tribe_wind', name:'风雪领主 · 札尔札特', emoji:'🌨️', glyph:'wind', range:'ranged', hp:9, atk:7, stamina:4, tint:'#b8e8ff', rot:0, flip:false,
+    cond:'回合数 ≥ 3',
+    skill:{ name:'鹰眼', type:'mark', desc:'标记一名敌方单位，使其成为“鹰眼目标”，数回合内我方所有单位对其造成的伤害提高 50%。', cd:1, staminaCost:4, markTurns:3 } },
+  h_tribe_rhino: { id:'h_tribe_rhino', name:'犀牛战神 · 拉尔萨', emoji:'🦏', glyph:'beast', range:'melee', hp:15, atk:7, stamina:4, tint:'#ffb07a', rot:0, flip:false,
+    cond:'我方场上单位数 ≥ 4',
+    skill:{ name:'蛮力冲撞', type:'barb', desc:'蓄势数回合：期间免疫第一次受到的伤害，且对其造成近战伤害的敌方单位会受到反伤。', cd:2, staminaCost:4, barbTurns:3, reflect:2 } },
+  h_tribe_moon: { id:'h_tribe_moon', name:'月神祭司 · 尤娜梅尔', emoji:'🌙', glyph:'star', range:'ranged', hp:10, atk:4, stamina:3, tint:'#d0c8ff', rot:0, flip:false,
+    cond:'我方场上单位数 ≥ 3',
+    skill:{ name:'祈祷', type:'prayer', desc:'进入一回合祈祷（无法行动且不会被选中）；结束后我方全体获得“神护”（受到伤害 -2），月神庇护期间新入场的卡牌同样获得。', cd:3, staminaCost:3, blessTurns:3, shield:2 } }
+};
+
+/* ================= 玩家普通卡牌（20 种，中世纪第三时代数值） ================= */
 const NORMAL_PLAYER_CARDS = {
-  militia:      { id:'militia',      name:'民兵',     glyph:'sword',    range:'melee',  gold:1, stamina:1, hp:3,  atk:2, tint:'#e8e2d0', rot:0,  flip:false, desc:'最基础的前排步兵，廉价实用。' },
-  guard:        { id:'guard',        name:'盾卫',     glyph:'shield',   range:'melee',  gold:2, stamina:2, hp:15, atk:1, tint:'#8fb0e8', rot:0,  flip:false, desc:'极致肉盾：被近战攻击时反伤 1 点。' },
-  archer:       { id:'archer',       name:'弓箭手',   glyph:'bow',      range:'ranged', gold:2, stamina:2, hp:4,  atk:4, tint:'#7ee0a8', rot:0,  flip:false, desc:'轻装远程，脆皮高输出。' },
-  swordsman:    { id:'swordsman',    name:'剑士',     glyph:'sword',    range:'melee',  gold:2, stamina:2, hp:7,  atk:6, tint:'#f0c78e', rot:14, flip:true,  desc:'攻守均衡的近战单位。' },
-  pikeman:      { id:'pikeman',      name:'长枪兵',   glyph:'spear',    range:'melee',  gold:3, stamina:3, hp:8,  atk:7, tint:'#d8b25c', rot:0,  flip:false, desc:'长枪贯穿，高攻前排。' },
-  knight:       { id:'knight',       name:'骑士',     glyph:'helm',     range:'melee',  gold:3, stamina:3, hp:12, atk:5, tint:'#b9a7ff', rot:0,  flip:false, desc:'身披重甲的冲锋铁骑。' },
-  assassin:     { id:'assassin',     name:'刺客',     glyph:'dagger',   range:'melee',  gold:4, stamina:3, hp:5,  atk:14, tint:'#8fd8ff', rot:0,  flip:true,  desc:'一击致命：超高攻击，身板极脆。' },
-  musketeer:    { id:'musketeer',    name:'火枪手',   glyph:'musket',   range:'ranged', gold:4, stamina:4, hp:6,  atk:10, tint:'#e0b0ff', rot:0,  flip:false, desc:'远程重火力，枪枪见血。' },
-  crossbowman:  { id:'crossbowman',  name:'弩手',     glyph:'crossbow', range:'ranged', gold:3, stamina:3, hp:6,  atk:8, tint:'#a8d8e8', rot:0,  flip:false, desc:'重型钢臂弩，稳定高伤。' },
-  mage:         { id:'mage',         name:'法师',     glyph:'orb',      range:'ranged', gold:4, stamina:4, hp:6,  atk:10, tint:'#7fd0ff', rot:0,  flip:false, splash:true, desc:'群体溅射：攻击目标及同排敌人。' },
-  warlock:      { id:'warlock',      name:'术士',     glyph:'staff',    range:'ranged', gold:6, stamina:5, hp:15, atk:3, tint:'#c07ff0', rot:0,  flip:false, splash:true, desc:'每次攻击在我方最前排召唤幽灵剑士。' },
-  priest:       { id:'priest',       name:'牧师',     glyph:'heart',    range:'ranged', gold:3, stamina:2, hp:10, atk:2, tint:'#ffd0e8', rot:0,  flip:false, desc:'低攻高血的远程支援者。' },
-  catapult:     { id:'catapult',     name:'投石车',   glyph:'cannon',   range:'ranged', gold:6, stamina:5, hp:10, atk:13, tint:'#c9a06a', rot:0,  flip:false, splash:true, desc:'攻城重炮，群体溅射。' },
-  elemental:    { id:'elemental',    name:'元素使',   glyph:'wind',     range:'ranged', gold:7, stamina:6, hp:9,  atk:14, tint:'#9fe8d0', rot:0,  flip:false, splash:true, desc:'元素风暴，毁灭溅射。' },
-  griffon:      { id:'griffon',      name:'狮鹫骑士', glyph:'wing',     range:'melee',  gold:5, stamina:4, hp:11, atk:11, tint:'#ffe0a0', rot:0,  flip:false, desc:'天空骑士，攻守兼备。' },
-  templar:      { id:'templar',      name:'圣殿武士', glyph:'paladin',  range:'melee',  gold:5, stamina:4, hp:16, atk:7, tint:'#ffd8a8', rot:0,  flip:false, desc:'坚不可摧的圣武士。' },
-  berserker:    { id:'berserker',    name:'狂战士',   glyph:'axe',      range:'melee',  gold:6, stamina:5, hp:10, atk:16, tint:'#ff9a7a', rot:0,  flip:true,  desc:'疯狂输出：攻击力爆表。' },
-  shadowhunter: { id:'shadowhunter', name:'暗影猎手', glyph:'arrow',    range:'ranged', gold:5, stamina:4, hp:8,  atk:12, tint:'#a8c8ff', rot:0,  flip:false, desc:'远程精确打击。' },
-  champion:     { id:'champion',     name:'战神',     glyph:'swordx',   range:'melee',  gold:7, stamina:6, hp:14, atk:13, tint:'#f6dfa0', rot:0,  flip:false, desc:'攻防一体的战场精英。' },
-  dragon:       { id:'dragon',       name:'巨龙',     glyph:'dragon',   range:'ranged', gold:9, stamina:8, hp:22, atk:17, tint:'#8fe0b0', rot:0,  flip:false, splash:true, desc:'终极战力：巨型血条与毁灭溅射。' }
+  militia:      { id:'militia',      name:'民兵',     glyph:'sword',    range:'melee',  gold:1, stamina:1, hp:4,  atk:3, tint:'#e8e2d0', rot:0,  flip:false, desc:'最基础的前排步兵，廉价实用。' },
+  guard:        { id:'guard',        name:'盾卫',     glyph:'shield',   range:'melee',  gold:2, stamina:2, hp:20, atk:2, tint:'#8fb0e8', rot:0,  flip:false, desc:'极致肉盾：被近战攻击时反伤 1 点。' },
+  archer:       { id:'archer',       name:'弓箭手',   glyph:'bow',      range:'ranged', gold:2, stamina:2, hp:5,  atk:5, tint:'#7ee0a8', rot:0,  flip:false, desc:'轻装远程，脆皮高输出。' },
+  swordsman:    { id:'swordsman',    name:'剑士',     glyph:'sword',    range:'melee',  gold:2, stamina:2, hp:9,  atk:8, tint:'#f0c78e', rot:14, flip:true,  desc:'攻守均衡的近战单位。' },
+  pikeman:      { id:'pikeman',      name:'长枪兵',   glyph:'spear',    range:'melee',  gold:3, stamina:3, hp:10, atk:9, tint:'#d8b25c', rot:0,  flip:false, desc:'长枪贯穿，高攻前排。' },
+  knight:       { id:'knight',       name:'骑士',     glyph:'helm',     range:'melee',  gold:3, stamina:3, hp:15, atk:6, tint:'#b9a7ff', rot:0,  flip:false, desc:'身披重甲的冲锋铁骑。' },
+  assassin:     { id:'assassin',     name:'刺客',     glyph:'dagger',   range:'melee',  gold:4, stamina:3, hp:6,  atk:17, tint:'#8fd8ff', rot:0,  flip:true,  desc:'一击致命：超高攻击，身板极脆。' },
+  musketeer:    { id:'musketeer',    name:'火枪手',   glyph:'musket',   range:'ranged', gold:4, stamina:4, hp:8,  atk:12, tint:'#e0b0ff', rot:0,  flip:false, desc:'远程重火力，枪枪见血。' },
+  crossbowman:  { id:'crossbowman',  name:'弩手',     glyph:'crossbow', range:'ranged', gold:3, stamina:3, hp:8,  atk:10, tint:'#a8d8e8', rot:0,  flip:false, desc:'重型钢臂弩，稳定高伤。' },
+  mage:         { id:'mage',         name:'法师',     glyph:'orb',      range:'ranged', gold:4, stamina:4, hp:8,  atk:12, tint:'#7fd0ff', rot:0,  flip:false, splash:true, desc:'群体溅射：攻击目标及同排敌人。' },
+  warlock:      { id:'warlock',      name:'术士',     glyph:'staff',    range:'ranged', gold:6, stamina:5, hp:18, atk:4, tint:'#c07ff0', rot:0,  flip:false, splash:true, desc:'每次攻击在我方最前排召唤幽灵剑士。' },
+  priest:       { id:'priest',       name:'牧师',     glyph:'heart',    range:'ranged', gold:3, stamina:2, hp:13, atk:3, tint:'#ffd0e8', rot:0,  flip:false, desc:'低攻高血的远程支援者。' },
+  catapult:     { id:'catapult',     name:'投石车',   glyph:'cannon',   range:'ranged', gold:6, stamina:5, hp:13, atk:15, tint:'#c9a06a', rot:0,  flip:false, splash:true, desc:'攻城重炮，群体溅射。' },
+  elemental:    { id:'elemental',    name:'元素使',   glyph:'wind',     range:'ranged', gold:7, stamina:6, hp:11, atk:16, tint:'#9fe8d0', rot:0,  flip:false, splash:true, desc:'元素风暴，毁灭溅射。' },
+  griffon:      { id:'griffon',      name:'狮鹫骑士', glyph:'wing',     range:'melee',  gold:5, stamina:4, hp:13, atk:13, tint:'#ffe0a0', rot:0,  flip:false, desc:'天空骑士，攻守兼备。' },
+  templar:      { id:'templar',      name:'圣殿武士', glyph:'paladin',  range:'melee',  gold:5, stamina:4, hp:20, atk:9, tint:'#ffd8a8', rot:0,  flip:false, desc:'坚不可摧的圣武士。' },
+  berserker:    { id:'berserker',    name:'狂战士',   glyph:'axe',      range:'melee',  gold:6, stamina:5, hp:13, atk:19, tint:'#ff9a7a', rot:0,  flip:true,  desc:'疯狂输出：攻击力爆表。' },
+  shadowhunter: { id:'shadowhunter', name:'暗影猎手', glyph:'arrow',    range:'ranged', gold:5, stamina:4, hp:10, atk:14, tint:'#a8c8ff', rot:0,  flip:false, desc:'远程精确打击。' },
+  champion:     { id:'champion',     name:'战神',     glyph:'swordx',   range:'melee',  gold:7, stamina:6, hp:17, atk:15, tint:'#f6dfa0', rot:0,  flip:false, desc:'攻防一体的战场精英。' },
+  dragon:       { id:'dragon',       name:'巨龙',     glyph:'dragon',   range:'ranged', gold:9, stamina:8, hp:28, atk:20, tint:'#8fe0b0', rot:0,  flip:false, splash:true, desc:'终极战力：巨型血条与毁灭溅射。' }
 };
 
 /* ================= 敌方卡牌（12 种） ================= */
@@ -729,7 +818,14 @@ const CARD_ART = {
   skeleton:'cards/skeleton.jpg', goblin_archer:'cards/goblin_archer.jpg', bat:'cards/bat.jpg',
   orc:'cards/orc.jpg', ghost:'cards/ghost.jpg', werewolf:'cards/werewolf.jpg',
   frostmage:'cards/frostmage.jpg', deathknight:'cards/deathknight.jpg', demon:'cards/demon.jpg',
-  gargoyle:'cards/gargoyle.jpg', necromancer:'cards/necromancer.jpg', hellhound:'cards/hellhound.jpg'
+  gargoyle:'cards/gargoyle.jpg', necromancer:'cards/necromancer.jpg', hellhound:'cards/hellhound.jpg',
+  tribe_archer:'cards/tribe_archer.jpg', tribe_warrior:'cards/tribe_warrior.jpg',
+  tribe_spear:'cards/tribe_spear.jpg', tribe_chief:'cards/tribe_chief.jpg',
+  tribe_slinger:'cards/tribe_slinger.jpg', tribe_sabertooth:'cards/tribe_sabertooth.jpg',
+  tribe_shaman:'cards/tribe_shaman.jpg', tribe_witchdoctor:'cards/tribe_witchdoctor.jpg',
+  tribe_boar:'cards/tribe_boar.jpg', tribe_bear:'cards/tribe_bear.jpg', tribe_mammoth:'cards/tribe_mammoth.jpg',
+  h_tribe_storm:'cards/h_tribe_storm.jpg', h_tribe_wind:'cards/h_tribe_wind.jpg',
+  h_tribe_rhino:'cards/h_tribe_rhino.jpg', h_tribe_moon:'cards/h_tribe_moon.jpg'
 };
 
 /* ================= 卡面立绘（内联 SVG） ================= */
@@ -804,16 +900,16 @@ function artSVG(d){
 
 /* ================= 关卡配置（10 关，对手固定出牌顺序） ================= */
 const LEVELS = [
-  { id:1, name:'初出茅庐', enemyHp:18, enemyGold:3, enemyIncome:2, enemyStamina:8,  order:['skeleton','skeleton','skeleton','bat'] },
-  { id:2, name:'亡灵军团', enemyHp:24, enemyGold:4, enemyIncome:3, enemyStamina:9,  order:['skeleton','goblin_archer','bat','orc','skeleton'] },
-  { id:3, name:'夜色狩猎', enemyHp:30, enemyGold:5, enemyIncome:3, enemyStamina:10, order:['bat','orc','goblin_archer','ghost','orc'] },
-  { id:4, name:'深渊逼近', enemyHp:36, enemyGold:5, enemyIncome:4, enemyStamina:11, order:['goblin_archer','orc','ghost','gargoyle','ghost'] },
-  { id:5, name:'魔王降临', enemyHp:42, enemyGold:6, enemyIncome:4, enemyStamina:12, order:['ghost','werewolf','demon','gargoyle','ghost','orc'] },
-  { id:6, name:'亡灵海啸', enemyHp:50, enemyGold:6, enemyIncome:5, enemyStamina:13, order:['skeleton','skeleton','skeleton','goblin_archer','bat','bat','hellhound','necromancer'] },
-  { id:7, name:'恶魔十字军', enemyHp:56, enemyGold:7, enemyIncome:5, enemyStamina:14, order:['orc','werewolf','gargoyle','hellhound','demon','necromancer'] },
-  { id:8, name:'血月之夜', enemyHp:64, enemyGold:7, enemyIncome:6, enemyStamina:15, order:['bat','frostmage','ghost','demon','hellhound','gargoyle'] },
-  { id:9, name:'深渊之主', enemyHp:72, enemyGold:8, enemyIncome:6, enemyStamina:16, order:['gargoyle','deathknight','necromancer','frostmage','demon','hellhound'] },
-  { id:10, name:'终焉魔王', enemyHp:85, enemyGold:9, enemyIncome:7, enemyStamina:18, order:['deathknight','demon','frostmage','hellhound','gargoyle','necromancer','demon'] }
+  { id:1, name:'初出茅庐', enemyHp:18, enemyGold:3, enemyIncome:2, enemyStamina:8,  order:['skeleton','skeleton','skeleton','bat'], tribeOrder:['skeleton','skeleton','bat','goblin_archer'] },
+  { id:2, name:'亡灵军团', enemyHp:24, enemyGold:4, enemyIncome:3, enemyStamina:9,  order:['skeleton','goblin_archer','bat','orc','skeleton'], tribeOrder:['skeleton','goblin_archer','bat','orc','skeleton'] },
+  { id:3, name:'夜色狩猎', enemyHp:30, enemyGold:5, enemyIncome:3, enemyStamina:10, order:['bat','orc','goblin_archer','ghost','orc'], tribeOrder:['bat','goblin_archer','orc','ghost','orc'] },
+  { id:4, name:'深渊逼近', enemyHp:36, enemyGold:5, enemyIncome:4, enemyStamina:11, order:['goblin_archer','orc','ghost','gargoyle','ghost'], tribeOrder:['goblin_archer','orc','ghost','gargoyle','orc'] },
+  { id:5, name:'魔王降临', enemyHp:42, enemyGold:6, enemyIncome:4, enemyStamina:12, order:['ghost','werewolf','demon','gargoyle','ghost','orc'], tribeOrder:['ghost','werewolf','demon','gargoyle','orc','ghost'] },
+  { id:6, name:'亡灵海啸', enemyHp:50, enemyGold:6, enemyIncome:5, enemyStamina:13, order:['skeleton','skeleton','skeleton','goblin_archer','bat','bat','hellhound','necromancer'], tribeOrder:['skeleton','skeleton','bat','bat','hellhound','necromancer'] },
+  { id:7, name:'恶魔十字军', enemyHp:56, enemyGold:7, enemyIncome:5, enemyStamina:14, order:['orc','werewolf','gargoyle','hellhound','demon','necromancer'], tribeOrder:['orc','werewolf','gargoyle','hellhound','demon'] },
+  { id:8, name:'血月之夜', enemyHp:64, enemyGold:7, enemyIncome:6, enemyStamina:15, order:['bat','frostmage','ghost','demon','hellhound','gargoyle'], tribeOrder:['bat','frostmage','ghost','demon','hellhound','gargoyle'] },
+  { id:9, name:'深渊之主', enemyHp:72, enemyGold:8, enemyIncome:6, enemyStamina:16, order:['gargoyle','deathknight','necromancer','frostmage','demon','hellhound'], tribeOrder:['gargoyle','deathknight','necromancer','frostmage','demon'] },
+  { id:10, name:'终焉魔王', enemyHp:85, enemyGold:9, enemyIncome:7, enemyStamina:18, order:['deathknight','demon','frostmage','hellhound','gargoyle','necromancer','demon'], tribeOrder:['deathknight','demon','frostmage','hellhound','gargoyle','necromancer'] }
 ];
 const REWARD_FIRST = '首次胜利：金券 ×1';
 const REWARD_REPEAT = '重复胜利：紫券 ×3';
@@ -823,10 +919,11 @@ let profile = null;
 
 function defaultProfile(){
   return {
+    era: 0,
     goldTicket: 1,
     purpleTicket: 3,
-    heroes: { h_paladin: { tier:1, shards:0 } },
-    deck: ['militia','guard','archer','swordsman','pikeman','knight','crossbowman','musketeer','mage','priest','champion','h_paladin'],
+    heroes: { h_tribe_storm: { tier:1, shards:0 } },
+    deck: eraDefaultDeck(),
     firstWin: LEVELS.map(()=>false),
     unlocked: 1
   };
@@ -838,9 +935,13 @@ let introBusy = false;
 
 function sanitizeProfile(d){
   const p = Object.assign(defaultProfile(), d || {});
+  p.era = Math.min(Math.max(parseInt(p.era, 10) || 0, 0), 3);
+  if(!ERAS[p.era] || !ERAS[p.era].enabled) p.era = 0;
   if(!p.firstWin || p.firstWin.length !== LEVELS.length) p.firstWin = LEVELS.map(()=>false);
   if(!p.heroes || typeof p.heroes !== 'object') p.heroes = defaultProfile().heroes;
-  if(!Array.isArray(p.deck)) p.deck = defaultProfile().deck;
+  if(Array.isArray(p.deck)) p.deck = p.deck.filter(id => !id || isEraCard(id));
+  else p.deck = [];
+  if(p.deck.filter(Boolean).length === 0) p.deck = eraDefaultDeck();
   p.unlocked = Math.min(Math.max(parseInt(p.unlocked, 10) || 1, 1), LEVELS.length);
   return p;
 }
@@ -926,7 +1027,8 @@ function renderSaves(){
     if(p){
       const heroes = Object.keys(p.heroes || {}).length;
       const done = (p.firstWin || []).filter(Boolean).length;
-      html += `<div class="save-info">进度 ${p.unlocked || 1}/10 · 已通关 ${done} 关 · 英雄 ${heroes}/5<br>🎫 金券 ${p.goldTicket} · 🟣 紫券 ${p.purpleTicket} · 牌组 ${(p.deck || []).filter(Boolean).length}/12</div>`;
+      const eraName = ERAS[p.era] ? ERAS[p.era].name : '原始部落';
+      html += `<div class="save-info">${eraName}时代 · 进度 ${p.unlocked || 1}/10 · 已通关 ${done} 关 · 英雄 ${heroes}<br>🎫 金券 ${p.goldTicket} · 🟣 紫券 ${p.purpleTicket} · 牌组 ${(p.deck || []).filter(Boolean).length}/12</div>`;
       html += `<div class="save-btns"><button class="btn primary" data-act="enter">进入</button><button class="btn" data-act="del">删除</button></div>`;
     } else {
       html += '<div class="save-info">空存档 · 点击创建</div>';
@@ -939,7 +1041,8 @@ function renderSaves(){
 /* ================= 抽卡 / 升阶 ================= */
 const UP_COST = { 2:10, 3:20, 4:40, 5:80 };
 function pullOne(){
-  const id = HERO_IDS[Math.floor(Math.random() * HERO_IDS.length)];
+  const pool = eraHeroPool();
+  const id = pool[Math.floor(Math.random() * pool.length)];
   const h = profile.heroes[id];
   if(h){
     h.shards += 5;
@@ -958,7 +1061,7 @@ function upgradeHero(id){
   if(!h || h.tier >= 5){ openModal('提示', '该英雄已达最高 5 阶。', '<button class="btn" data-act="close">关闭</button>'); return; }
   const cost = UP_COST[h.tier + 1];
   if(h.shards < cost){
-    openModal('碎片不足', `升到 ${h.tier+1} 阶需要 ${cost} 枚【${HEROES[id].name}】的神圣碎片，当前 ${h.shards} 枚。`, '<button class="btn" data-act="close">关闭</button>');
+    openModal('碎片不足', `升到 ${h.tier+1} 阶需要 ${cost} 枚【${heroDefOf(id).name}】的神圣碎片，当前 ${h.shards} 枚。`, '<button class="btn" data-act="close">关闭</button>');
     return;
   }
   h.shards -= cost;
@@ -1021,6 +1124,10 @@ function heroUnlocked(id){
     case 'h_assassin': return s.turn >= 3;
     case 'h_merchant': return s.player.gold >= 8;
     case 'h_sage':     return s.playerField.filter(Boolean).length >= 3;
+    case 'h_tribe_storm': return s.playerField.filter(Boolean).length >= 3;
+    case 'h_tribe_wind':  return s.turn >= 3;
+    case 'h_tribe_rhino': return s.playerField.filter(Boolean).length >= 4;
+    case 'h_tribe_moon':  return s.playerField.filter(Boolean).length >= 3;
   }
   return false;
 }
@@ -1072,9 +1179,12 @@ async function newGame(lv){
     selectedField: -1,
     dragHand: -1,
     dragField: -1,
-    log: []
+    log: [],
+    stormDot: null,
+    marked: null,
+    moonBless: null
   };
-  $('battleLevelName').textContent = `第${L.id}关 · ${L.name}`;
+  $('battleLevelName').textContent = `${eraData().icon}${eraData().name} · 第${L.id}关 · ${L.name}`;
   addLog(`—— ${L.name} ——`, 'turn');
   addLog(`开局随机抽 ${HAND_START} 张手牌；金币 ${state.player.gold}，体力 ${state.player.stamina}/${state.player.stamina}`, 'sys');
   drawCards(HAND_START, false);
@@ -1118,6 +1228,45 @@ function startPlayerTurn(){
   state.player.gold += incomeNow();
   state.player.stamina = PLAYER_STAMINA;
   state.playerField.forEach(c => { if(c){ c.attacked = false; c.atkDebuff = 0; if(c.def && HEROES[c.def.id]){ if(c.skillCd > 0) c.skillCd--; c.taunt = 0; } } });
+  state.playerField.forEach(c => { if(c && c.def && TRIBE_HEROES[c.def.id] && c.skillCd > 0) c.skillCd--; });
+  // 风暴之势：持续对敌方全体造成伤害
+  if(state.stormDot && state.stormDot.turns > 0){
+    state.stormDot.turns--;
+    let killed = 0;
+    for(let i = 0; i < FIELD_SIZE; i++){
+      const e = state.enemyField[i];
+      if(!e) continue;
+      e.hp -= state.stormDot.dmg;
+      addLog(`风暴之势【${e.def.name}】：-${state.stormDot.dmg}`, 'player');
+      if(e.hp <= 0){ killEnemyCard(i); killed++; }
+    }
+    if(killed > 0) addLog(`风暴之势 消灭 ${killed} 个敌人！`, 'gain');
+    if(state.stormDot.turns <= 0) state.stormDot = null;
+  }
+  // 鹰眼标记持续
+  if(state.marked && --state.marked.turns <= 0){
+    state.marked = null;
+    addLog('鹰眼目标标记消失', 'sys');
+  }
+  // 祈祷结束 -> 月神庇护；庇护持续结算
+  let praying = false;
+  state.playerField.forEach(c => { if(c && c.prayer) praying = true; });
+  if(praying){
+    state.playerField.forEach(c => { if(c) c.prayer = false; });
+    const sk = TRIBE_HEROES.h_tribe_moon.skill;
+    state.moonBless = { turns: sk.blessTurns, shield: sk.shield };
+    state.playerField.forEach(c => { if(c) c.shield = sk.shield; });
+    addLog(`祈祷结束：月神庇护降临！我方全体获得神护（受伤 -${sk.shield}）`, 'player');
+  } else if(state.moonBless){
+    state.moonBless.turns--;
+    if(state.moonBless.turns <= 0){
+      state.playerField.forEach(c => { if(c) c.shield = 0; });
+      state.moonBless = null;
+      addLog('月神庇护结束，神护效果消失', 'sys');
+    }
+  }
+  // 犀牛战神蓄势持续
+  state.playerField.forEach(c => { if(c && c.barb && --c.barb.turns <= 0) c.barb = null; });
   addLog(`—— 第 ${state.turn} 回合 · 你的回合 ——`, 'turn');
   addLog(`获得金币 +${incomeNow()}（${state.player.gold}），体力恢复至 ${state.player.stamina}/${state.player.stamina}`, 'sys');
   const before = state.hand.length;
@@ -1140,8 +1289,9 @@ function playCard(handIdx, slotIdx){
     addLog(`金币不足：【${def.name}】需要 ${def.gold} 金币`, 'warn');
     return;
   }
-  if(HEROES[cardId] && !heroUnlocked(cardId)){
-    addLog(`【${def.name}】条件未满足：${HEROES[cardId].cond}`, 'warn');
+  const heroDef = HEROES[cardId] || TRIBE_HEROES[cardId];
+  if(heroDef && !heroUnlocked(cardId)){
+    addLog(`【${def.name}】条件未满足：${heroDef.cond}`, 'warn');
     return;
   }
   if(state.playerField[slotIdx]){
@@ -1149,11 +1299,11 @@ function playCard(handIdx, slotIdx){
     return;
   }
   state.player.gold = Math.max(0, state.player.gold - cost);
-  const hero = HEROES[cardId];
+  const hero = heroDef;
   const heroTier = hero ? (profile.heroes[cardId] ? profile.heroes[cardId].tier : 1) : 1;
   const maxHp = hero ? heroStats(hero, heroTier).hp : def.hp;
   state.playerField[slotIdx] = { def, uid: uid(), hp: maxHp, maxHp, attacked: false,
-    tier: heroTier, skillCd: 0, taunt: 0 };
+    tier: heroTier, skillCd: 0, taunt: 0, shield: state.moonBless ? state.moonBless.shield : 0 };
   state.hand.splice(handIdx, 1);
   state.selectedHand = -1;
   addLog(hero ? `你召唤英雄【${def.name}】（${heroTier}阶）→ 卡槽 ${slotIdx + 1}` : `你打出【${def.name}】→ 卡槽 ${slotIdx + 1}（花费 ${cost} 金币）`, 'player');
@@ -1197,7 +1347,11 @@ function killEnemyCard(idx){
     const slot = state.enemyField.findIndex(s => !s);
     if(slot >= 0){
       const d = ENEMY_CARDS.skeleton;
-      state.enemyField[slot] = { def: d, uid: uid(), hp: d.hp, maxHp: d.hp, attacked: false };
+      const boost = enemyBoost();
+      state.enemyField[slot] = {
+        def: d, uid: uid(), hp: Math.round(d.hp * boost), maxHp: Math.round(d.hp * boost),
+        atk: Math.round(d.atk * boost), attacked: false
+      };
       addLog(`【亡灵法师】的亡语触发：召唤【骷髅】！`, 'enemy');
     }
   }
@@ -1248,6 +1402,7 @@ function doAttack(attackerIdx, target){
     const enemy = state.enemyField[tIdx];
     if(!enemy) return;
     let dmg = effAtk(card);
+    if(state.marked && state.marked.idx === tIdx) dmg = Math.round(dmg * 1.5);   // 鹰眼目标
     if(enemy.def.id === 'gargoyle') dmg = Math.max(1, dmg - 2);   // 石像鬼：石肤减伤
     enemy.hp -= dmg;
     const msg = `【${card.def.name}】攻击【${enemy.def.name}】：-${dmg}`;
@@ -1304,8 +1459,26 @@ function doEnemyAttack(attackerIdx, target){
     if(pc.taunt === 1 && HEROES[pc.def.id] && HEROES[pc.def.id].skill && HEROES[pc.def.id].skill.type === 'taunt'){
       dmg = Math.max(1, Math.round(dmg / 2));
     }
+    // 神护：受到伤害 -2
+    if(pc.shield) dmg = Math.max(1, dmg - pc.shield);
+    // 犀牛战神·拉尔萨：蛮力冲撞（免疫第一次伤害 + 近战反伤）
+    let immuneHit = false;
+    let barbReflect = 0;
+    if(pc.barb){
+      if(pc.barb.immune && dmg > 0){
+        dmg = 0;
+        pc.barb.immune = false;
+        immuneHit = true;
+      }
+      if(card.def.range === 'melee') barbReflect = pc.barb.reflect;
+    }
     pc.hp -= dmg;
-    let msg = `【${card.def.name}】攻击【${pc.def.name}】：-${dmg}`;
+    let msg = `【${card.def.name}】攻击【${pc.def.name}】：-${dmg}${immuneHit ? '（免疫！）' : ''}`;
+    if(pc.barb && barbReflect > 0 && state.enemyField[attackerIdx]){
+      card.hp -= barbReflect;
+      msg += `，蛮力反伤 -${barbReflect}`;
+      if(card.hp <= 0) killEnemyCard(attackerIdx);
+    }
     // 冰霜法师：冰寒减攻
     if(card.def.id === 'frostmage' && pc.hp > 0){
       pc.atkDebuff = 2;
@@ -1336,8 +1509,10 @@ function doEnemyAttack(attackerIdx, target){
           if(i === pIdx) continue;
           const other = state.playerField[i];
           if(!other) continue;
-          other.hp -= splash;
-          addLog(`【${card.def.name}】溅射【${other.def.name}】：-${splash}`, 'enemy');
+          let sd = splash;
+          if(other.shield) sd = Math.max(1, sd - other.shield);
+          other.hp -= sd;
+          addLog(`【${card.def.name}】溅射【${other.def.name}】：-${sd}`, 'enemy');
           if(other.hp <= 0) killPlayerCard(i);
         }
       }
@@ -1350,10 +1525,10 @@ function doEnemyAttack(attackerIdx, target){
 
 function enemyPickTarget(i){
   const card = state.enemyField[i];
-  const taunter = state.playerField.findIndex(c => c && c.taunt === 1);
+  const taunter = state.playerField.findIndex(c => c && c.taunt === 1 && !c.prayer);
   if(taunter >= 0 && state.playerField[taunter]) return { type:'card', idx:taunter };
   const playerCells = [];
-  for(let j = 0; j < FIELD_SIZE; j++) if(state.playerField[j]) playerCells.push(j);
+  for(let j = 0; j < FIELD_SIZE; j++) if(state.playerField[j] && !state.playerField[j].prayer) playerCells.push(j);
   if(!playerCells.length) return { type:'hero' };
   let pool;
   if(card.def.range === RANGE.RANGED) pool = playerCells;
@@ -1367,7 +1542,7 @@ function enemyPickTarget(i){
 }
 
 function enemyAtk(card){
-  let a = card.def.atk;
+  let a = card.atk !== undefined ? card.atk : card.def.atk;
   // 狼人：狂暴（生命低于一半时攻击 +4）
   if(card.def.id === 'werewolf' && card.hp <= Math.ceil((card.maxHp || card.def.hp) / 2)) a += 4;
   // 魔王：威压（每有一名友军在场攻击 +1，最多 +3）
@@ -1390,7 +1565,7 @@ function firstEmptyFront(side){
 function activateSkill(slotIdx){
   if(!isPlayerTurn()) return;
   const hero = state.playerField[slotIdx];
-  if(!hero || !HEROES[hero.def.id]) return;
+  if(!hero || !heroDefOf(hero.def.id)) return;
   const sk = hero.def.skill;
   if(hero.skillCd > 0){
     addLog(`【${hero.def.name}】技能冷却中（剩余 ${hero.skillCd} 回合）`, 'warn');
@@ -1441,6 +1616,33 @@ function activateSkill(slotIdx){
       addLog(`【${sk.name}】恢复 ${healed} 个单位 ${st.heal} 点生命`, 'gain');
       break;
     }
+    case 'storm': {
+      let killed = 0;
+      for(let i = 0; i < FIELD_SIZE; i++){
+        const e = state.enemyField[i];
+        if(!e) continue;
+        e.hp -= st.power;
+        addLog(`【${sk.name}】对【${e.def.name}】：-${st.power}`, 'player');
+        if(e.hp <= 0){ killEnemyCard(i); killed++; }
+      }
+      state.stormDot = { turns: sk.dotTurns, dmg: sk.dotDmg };
+      addLog(`【${sk.name}】风暴席卷全场！后续 ${sk.dotTurns} 回合持续伤害`, 'player');
+      if(killed > 0) addLog(`${sk.name} 消灭 ${killed} 个敌人！`, 'gain');
+      break;
+    }
+    case 'mark':
+      skillTargeting = slotIdx;
+      addLog(`【${sk.name}】就绪：点击一名敌方卡牌设为鹰眼目标`, 'player');
+      break;
+    case 'barb':
+      hero.barb = { turns: sk.barbTurns, immune: true, reflect: sk.reflect };
+      addLog(`【${hero.def.name}】发动【${sk.name}】：蓄势 ${sk.barbTurns} 回合，免疫第一次伤害，近战攻击者受反伤`, 'player');
+      break;
+    case 'prayer':
+      hero.prayer = true;
+      hero.attacked = true;
+      addLog(`【${hero.def.name}】开始祈祷：一回合内无法行动且不会被选中`, 'player');
+      break;
   }
   renderBattle();
   checkEnd();
@@ -1451,6 +1653,15 @@ function applyNuke(target){
   if(!hero){ skillTargeting = -1; renderBattle(); return; }
   const sk = hero.def.skill;
   const st = heroStats(hero.def, hero.tier);
+  if(sk.type === 'mark'){
+    if(target.type === 'card' && state.enemyField[target.idx]){
+      state.marked = { idx: target.idx, turns: sk.markTurns || 3 };
+      addLog(`【${hero.def.name}】标记【${state.enemyField[target.idx].def.name}】为鹰眼目标！`, 'player');
+    }
+    skillTargeting = -1;
+    renderBattle();
+    return;
+  }
   if(target.type === 'hero'){
     state.enemy.hp = Math.max(0, state.enemy.hp - st.power);
     addLog(`【${sk.name}】命中对手英雄：-${st.power}（对手 ${state.enemy.hp}/${LEVELS[state.level].enemyHp}）`, 'player');
@@ -1493,13 +1704,14 @@ async function enemyTurn(){
   if(token !== stateToken) return;
 
   // 对手发牌：按固定顺序将脚本卡加入手牌，手牌满 8 张后停止发牌
-  while(state.enemy.hand.length < MAX_HAND && state.orderIndex < L.order.length){
-    state.enemy.hand.push(ENEMY_CARDS[L.order[state.orderIndex]]);
+  const script = eraScript(L);
+  while(state.enemy.hand.length < MAX_HAND && state.orderIndex < script.length){
+    state.enemy.hand.push(ENEMY_CARDS[script[state.orderIndex]]);
     state.orderIndex++;
   }
 
   let placed = 0;
-  while(placed < ENEMY_MAX_PLAY){
+  while(placed < eraMaxPlay()){
     if(state.over) return;
     const def = state.enemy.hand[0];
     if(!def) break;
@@ -1508,7 +1720,11 @@ async function enemyTurn(){
     if(e.gold < def.gold){ addLog('对手金币不足，暂停出牌', 'sys'); break; }
     e.gold -= def.gold;
     state.enemy.hand.shift();
-    state.enemyField[slot] = { def, uid: uid(), hp: def.hp, maxHp: def.hp, attacked: false };
+    const boost = enemyBoost();
+    state.enemyField[slot] = {
+      def, uid: uid(), hp: Math.round(def.hp * boost), maxHp: Math.round(def.hp * boost),
+      atk: Math.round(def.atk * boost), attacked: false
+    };
     placed++;
     addLog(`对手打出【${def.name}】→ 卡槽 ${slot + 1}（花费 ${def.gold} 金币）`, 'enemy');
     animateEnemyPlay(slot, def);
@@ -1565,11 +1781,22 @@ function checkEnd(){
     if(next < LEVELS.length && next + 1 > profile.unlocked) profile.unlocked = next + 1;
     saveProfile();
     const L = LEVELS[levelIndex];
+    const evolved = levelIndex === LEVELS.length - 1 && nextEraIndex() >= 0;
+    let evo = null;
+    if(evolved) evo = evolveEra();
     let html = '';
-    if(levelIndex + 1 < LEVELS.length) html += '<button class="btn primary" data-act="next">下一关 ▶</button>';
+    if(evolved){
+      html += '<button class="btn primary" data-act="evolved">进入新时代 ▶</button>';
+    } else if(levelIndex + 1 < LEVELS.length){
+      html += '<button class="btn primary" data-act="next">下一关 ▶</button>';
+    }
     html += '<button class="btn" data-act="retry">重新挑战</button>';
     html += '<button class="btn" data-act="home">返回主页</button>';
-    openModal('🎉 关卡胜利！', `你击败了【${L.name}】的对手！\n${reward}`, html);
+    const title = evolved ? '🎉 时代进化！' : '🎉 关卡胜利！';
+    const text = evolved
+      ? `你征服了【${L.name}】，部落文明迎来进化！\n进入【${evo ? evo.name : ''}】时代，从第 1 关重新开始。\n${reward}`
+      : `你击败了【${L.name}】的对手！\n${reward}`;
+    openModal(title, text, html);
   } else if(state.player.hp <= 0){
     state.over = true;
     busy = true;
@@ -1589,11 +1816,11 @@ function openModal(title, text, html){
 const SUMMON_CARDS = {
   ghostsword: { id:'ghostsword', name:'幽灵剑士', glyph:'sword', range:'melee', gold:0, stamina:1, hp:4, atk:5, tint:'#b8c8ff', rot:0, flip:false, desc:'术士召唤的亡魂剑士。' }
 };
-const PLAYER_CARDS = Object.assign({}, NORMAL_PLAYER_CARDS, SUMMON_CARDS, HEROES);
+const PLAYER_CARDS = Object.assign({}, TRIBE_NORMAL_CARDS, NORMAL_PLAYER_CARDS, TRIBE_HEROES, HEROES, SUMMON_CARDS);
 
 function cardFaceHTML(card, opts){
   const d = card.def || card;
-  const hero = HEROES[d.id] !== undefined;
+  const hero = (HEROES[d.id] || TRIBE_HEROES[d.id]) !== undefined;
   const enemy = ENEMY_CARDS[d.id] !== undefined;
   const hp = card.hp !== undefined ? card.hp : d.hp;
   let side = opts.side || (hero ? 'hero' : enemy ? 'enemy' : 'player');
@@ -1625,7 +1852,7 @@ function cardFaceHTML(card, opts){
   </div>`;
 }
 
-function sideOf(defId){ return HEROES[defId] ? 'hero' : ENEMY_CARDS[defId] ? 'enemy' : 'player'; }
+function sideOf(defId){ return (HEROES[defId] || TRIBE_HEROES[defId]) ? 'hero' : ENEMY_CARDS[defId] ? 'enemy' : 'player'; }
 
 /* ================= 视图切换 ================= */
 function showView(v){
@@ -1646,6 +1873,9 @@ function showView(v){
 /* ================= 主页 / 选卡 / 抽卡 / 关卡 渲染 ================= */
 function renderHome(){
   $('homeSaveTag').textContent = activeSlot >= 0 ? (activeSlot + 1) : '-';
+  $('homeEraTag').textContent = eraData().icon + ' ' + eraData().name;
+  const isTribe = eraData().id === 'tribe';
+  $('homeSub').textContent = `对桌卡牌 · ${isTribe ? Object.keys(TRIBE_NORMAL_CARDS).length : Object.keys(NORMAL_PLAYER_CARDS).length} 兵种 · ${(isTribe ? Object.keys(TRIBE_HEROES).length : Object.keys(HEROES).length)} 英雄 · 10 关卡`;
   $('goldTicketVal').textContent = profile.goldTicket;
   $('purpleTicketVal').textContent = profile.purpleTicket;
   $('heroOwnedVal').textContent = Object.keys(profile.heroes).length;
@@ -1660,14 +1890,16 @@ function renderDeck(){
     return `<div class="deck-slot" data-i="${i}"><span class="slot-num">${i + 1}</span><span class="remove-tag">移除</span>${cardFaceHTML({ def }, { side: sideOf(id), extra:'', data:'' })}</div>`;
   }).join('');
 
-  const heroes = Object.keys(profile.heroes);
-  const normalIds = Object.keys(NORMAL_PLAYER_CARDS);
+  const isTribe = eraData().id === 'tribe';
+  const heroes = Object.keys(profile.heroes).filter(id => isTribe ? !!TRIBE_HEROES[id] : !!HEROES[id]);
+  const normalPool = isTribe ? TRIBE_NORMAL_CARDS : NORMAL_PLAYER_CARDS;
+  const normalIds = Object.keys(normalPool);
   let html = '<h3>⭐ 英雄卡 <small>数值随阶提升，自带独特技能，进场需满足条件</small></h3><div class="col-grid">';
   for(const id of heroes){
     const def = PLAYER_CARDS[id];
     html += cardFaceHTML({ def }, { side:'hero', extra:`col-card${profile.deck.includes(id) ? ' in-deck' : ''}`, data:` data-id="${id}"` });
   }
-  html += '</div><h3>⚔️ 普通卡 <small>共 20 种 · 每张入组后自带 2 份进牌库</small></h3><div class="col-grid">';
+  html += `</div><h3>⚔️ 普通卡 <small>共 ${normalIds.length} 种 · 每张入组后自带 2 份进牌库</small></h3><div class="col-grid">`;
   for(const id of normalIds){
     const def = PLAYER_CARDS[id];
     html += cardFaceHTML({ def }, { side:'player', extra:`col-card${profile.deck.includes(id) ? ' in-deck' : ''}`, data:` data-id="${id}"` });
@@ -1682,7 +1914,7 @@ function renderCardDetail(id){
   const panel = $('cardDetail');
   if(!id || !PLAYER_CARDS[id]){ panel.classList.add('hidden'); panel.innerHTML = ''; return; }
   const def = PLAYER_CARDS[id];
-  const hero = HEROES[id];
+  const hero = heroDefOf(id);
   const inDeck = profile.deck.includes(id);
   let html = `<div class="detail-art">${cardFaceHTML({ def }, { side: sideOf(id), extra:'', data:'' })}</div><div class="detail-info">`;
   html += `<h3>${def.name}${hero ? ' <span style="color:#d8b2ff">· 英雄</span>' : ''}</h3>`;
@@ -1713,7 +1945,7 @@ function renderGacha(){
   for(let i = 0; i < 12; i++){
     const r = gachaLast[i];
     if(!r){ slots.push('<div class="gacha-card g-empty"></div>'); continue; }
-    const def = HEROES[r.id];
+    const def = heroDefOf(r.id);
     slots.push(`<div class="gacha-card g-flip${r.dup ? '' : ' new'}">
       <div class="g-inner">
         <div class="g-face g-back">${cardBackSVG()}</div>
@@ -1726,7 +1958,9 @@ function renderGacha(){
 }
 
 function renderLevelsView(){
-  $('levelList').innerHTML = LEVELS.map((L, i) => {
+  const era = eraData();
+  const head = `<div style="text-align:center;color:#f6dfa0;font-size:15px;margin-bottom:10px;">${era.icon} ${era.name}时代 · 共 10 关（通关第 10 关后进化到下一时代）</div>`;
+  $('levelList').innerHTML = head + LEVELS.map((L, i) => {
     const locked = i >= profile.unlocked;
     const done = profile.firstWin[i];
     const badge = locked ? '<span class="level-badge">🔒 未解锁</span>' : done ? '<span class="level-badge done">✓ 已通关</span>' : '<span class="level-badge cur">可挑战</span>';
@@ -1863,7 +2097,7 @@ function renderHand(){
   } else {
     h.innerHTML = state.hand.map((id, i) => {
       const d = PLAYER_CARDS[id];
-      const hero = HEROES[id];
+      const hero = heroDefOf(id);
       const locked = !!(hero && !heroUnlocked(id));
       const poor = state.player.gold < d.gold;
       let extra = `hcard${i === state.selectedHand ? ' selected' : ''}${(poor || locked) ? ' poor' : ''}${locked ? ' locked' : ''}`;
@@ -1928,7 +2162,7 @@ function renderDeckPile(side, count){
 function renderDecks(){
   if(!state) return;
   renderDeckPile('player', state.deck.length);
-  renderDeckPile('enemy', Math.max(0, LEVELS[state.level].order.length - state.orderIndex));
+  renderDeckPile('enemy', Math.max(0, eraScript(LEVELS[state.level]).length - state.orderIndex));
 }
 
 function deckCenter(side){
@@ -2004,7 +2238,7 @@ async function animateGachaPulls(){
   for(let i = 0; i < items.length; i++){
     const r = cards[i] ? cards[i].getBoundingClientRect() : null;
     const to = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: from.x, y: from.y + 70 };
-    await flyCard(HEROES[items[i].id], from, to, 460, true, 'dfx-lg');
+    await flyCard(heroDefOf(items[i].id), from, to, 460, true, 'dfx-lg');
     await delay(70);
   }
   grid.classList.remove('animating');
@@ -2255,7 +2489,7 @@ function positionInfo(pop, anchor){
 
 function showInfo(def, opts){
   const pop = $('infoPop');
-  const hero = HEROES[def.id] !== undefined;
+  const hero = (HEROES[def.id] || TRIBE_HEROES[def.id]) !== undefined;
   const side = hero ? 'hero' : opts.side;
   let html = `<div class="info-name ${side}">${def.name}${hero ? ' · 英雄' : ''}</div>`;
   html += `<div class="info-row">🪙 ${def.gold !== undefined ? def.gold + ' 金币' : '满足条件进场'} · ⚡ 体力 ${def.stamina}</div>`;
@@ -2279,7 +2513,10 @@ function cardStates(card){
   const st = [];
   if(card.attacked) st.push('本回合已行动');
   if(card.taunt === 1) st.push('嘲讽中（50%免伤）');
-  if(card.def && HEROES[card.def.id] && card.skillCd > 0) st.push(`技能冷却 ${card.skillCd}`);
+  if(card.def && heroDefOf(card.def.id) && card.skillCd > 0) st.push(`技能冷却 ${card.skillCd}`);
+  if(card.prayer) st.push('祈祷中（无法行动、不会被选中）');
+  if(card.barb) st.push(`蛮力冲撞（剩余 ${card.barb.turns} 回合${card.barb.immune ? '，免疫一次伤害' : ''}）`);
+  if(card.shield) st.push(`神护（受伤 -${card.shield}）`);
   return st;
 }
 
@@ -2609,6 +2846,7 @@ $('modalBtns').addEventListener('click', e => {
   const act = b.dataset.act;
   $('modal').classList.add('hidden');
   if(act === 'next') newGame(levelIndex + 1);
+  else if(act === 'evolved') newGame(0);
   else if(act === 'retry') newGame(levelIndex);
   else if(act === 'home') showView('home');
 });
