@@ -2541,6 +2541,13 @@ function aimValid(aimState, target){
   return vt.some(t => t.type === target.type && (target.type !== 'card' || t.idx === target.idx));
 }
 
+function giantBlock(idx){
+  const blockLeft = Math.min(idx % 5, 3);
+  const out = [];
+  for(let r = 0; r < 2; r++) for(let c = blockLeft; c <= blockLeft + 1; c++) out.push(r * 5 + c);
+  return out;
+}
+
 function clearAimHighlights(){
   document.querySelectorAll('.aim-target').forEach(el => el.classList.remove('aim-target'));
 }
@@ -2935,8 +2942,17 @@ document.addEventListener('mousemove', e => {
   aim.target = ok ? t : null;
   clearAimHighlights();
   if(ok){
-    const el = t.type === 'hero' ? $('enemyHpTarget') : document.querySelector('#enemyHalf [data-field="' + t.idx + '"]');
-    if(el) el.classList.add('aim-target');
+    const attacker = state.playerField[aim.slot];
+    if(attacker && attacker.def.id === 'tribe_giant' && t.type === 'card'){
+      // 原始巨人：高亮箭头所指 2×2 整块区域
+      for(const ci of giantBlock(t.idx)){
+        const el = document.querySelector('#enemyHalf [data-field="' + ci + '"]');
+        if(el) el.classList.add('aim-target');
+      }
+    } else {
+      const el = t.type === 'hero' ? $('enemyHpTarget') : document.querySelector('#enemyHalf [data-field="' + t.idx + '"]');
+      if(el) el.classList.add('aim-target');
+    }
   }
 });
 document.addEventListener('mouseup', () => {
