@@ -2549,11 +2549,16 @@ async function playerAttackWithAnim(slot, target){
   if(!isPlayerTurn()) return;
   hideInfo();
   busy = true;
-  renderBattle();
-  await animateCardAttack('player', slot, target);
-  busy = false;
+  try {
+    renderBattle();
+    await animateCardAttack('player', slot, target);
+  } catch(e){
+    console.error(e);
+  } finally {
+    busy = false;
+  }
   doAttack(slot, target);
-  busy = false;
+  renderBattle();
 }
 
 function animateTo(el, from, to, dur){
@@ -2879,7 +2884,8 @@ $('playerHalf').addEventListener('dragstart', e => {
   const field = e.target.closest('[data-field]');
   if(!field) return;
   const i = parseInt(field.dataset.field, 10);
-  if(!state.playerField[i]){ e.preventDefault(); return; }
+  const card = state.playerField[i];
+  if(!card || card.attacked || card.def.atk <= 0 || state.player.stamina < card.def.stamina){ e.preventDefault(); return; }
   state.dragField = i;
   e.dataTransfer.setData('text/plain', 'field:' + i);
   e.dataTransfer.effectAllowed = 'move';
@@ -2951,8 +2957,8 @@ $('playerHalf').addEventListener('click', e => {
   if(field){
     const i = parseInt(field.dataset.field, 10);
     state.selectedHand = -1;
-    state.selectedField = state.selectedField === i ? -1 : i;
     const pc = state.playerField[i];
+    state.selectedField = (pc && !pc.attacked && pc.def.atk > 0 && state.player.stamina >= pc.def.stamina) ? (state.selectedField === i ? -1 : i) : -1;
     if(pc) toggleInfo('p' + i, pc.def, { side: sideOf(pc.def.id), curHp: pc.hp, states: cardStates(pc), anchorEl: field, tier: pc.tier });
     renderBattle();
     return;
