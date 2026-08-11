@@ -25,9 +25,10 @@
   /* ---------- 视图切换 ---------- */
   .view{display:none}
   .view.active{display:block}
-  .view-track{display:none;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+  .view-track{display:none;transition:transform .5s cubic-bezier(.4,0,.2,1);transform:translateX(-200%)}
   .view-track.active{display:flex}
   .view-track.show-deck{transform:translateX(-100%)}
+  .view-track.show-shop{transform:translateX(0)}
   .view-track .view{display:block;flex:0 0 100%;min-width:100%}
   #viewHome{touch-action:pan-y}
   .view.overlay{position:fixed;inset:0;z-index:40;overflow-y:auto;padding:24px 14px;
@@ -100,6 +101,15 @@
   .col-card .cname{font-size:11px}
   .col-card .tier-tag{position:absolute;top:4px;right:5px;z-index:4;font-size:10px;color:#f6dfa0;
     background:rgba(60,40,5,.8);border:1px solid #f0c75e;border-radius:8px;padding:0 6px}
+  .col-wrap{display:flex;flex-direction:column;gap:2px;align-items:stretch}
+  .upg-bar{position:relative;height:10px;border-radius:6px;background:rgba(0,0,0,.55);
+    border:1px solid rgba(240,199,94,.45);overflow:hidden;margin-top:2px}
+  .upg-bar .upg-fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;
+    background:linear-gradient(90deg,#8a5d1a,#f0c75e 60%,#ffe9a8);transition:width .3s}
+  .upg-bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:8px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);letter-spacing:.5px}
+  .upg-bar.full{border-color:#8fe0b0}
+  .upg-bar.full .upg-fill{background:linear-gradient(90deg,#1e7a44,#3ec06f 60%,#a9f0c8)}
   .detail-panel{margin-top:18px;padding:16px;border-radius:14px;background:rgba(0,0,0,.4);
     border:1px solid rgba(240,199,94,.25);display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
   .detail-panel.hidden{display:none}
@@ -110,6 +120,35 @@
   .detail-info .skill{background:rgba(240,199,94,.1);border:1px solid rgba(240,199,94,.35);border-radius:10px;
     padding:8px 10px;margin-top:8px;color:#f0d9a0;font-size:13px;line-height:1.7}
   .detail-btns{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+
+  /* ---------- 商店页面 ---------- */
+  .view-shop{height:100vh;overflow-y:auto;background:url('bg-deck.jpg') center/cover no-repeat, #0a1226;
+    position:relative;padding:0}
+  .view-shop::before{content:'';position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 45%, rgba(6,10,22,.10), rgba(4,7,16,.42))}
+  .shop-stage{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 20px 40px}
+  .shop-title{text-align:center;color:#f6dfa0;font-size:22px;letter-spacing:3px;margin:6px 0 16px}
+  .shop-coin{position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px;
+    background:rgba(20,16,10,.45);border:1px solid rgba(240,199,94,.4);border-radius:22px;
+    padding:6px 16px 6px 8px;backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .shop-coin img{width:34px;height:34px;object-fit:contain;border-radius:50%;
+    background:rgba(255,255,255,.12)}
+  .shop-coin span{font-size:18px;font-weight:800;color:#ffe9a8}
+  .shop-section{background:rgba(14,12,8,.42);border:1px solid rgba(240,199,94,.28);border-radius:18px;
+    padding:14px 16px;margin-bottom:16px;backdrop-filter:blur(5px)}
+  .shop-sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    color:#f6dfa0;font-size:16px;font-weight:700;margin-bottom:12px}
+  .shop-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .shop-card{position:relative;text-align:center}
+  .shop-card .bcard{width:100%;height:auto;aspect-ratio:9/14}
+  .shop-card .price{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:10px;
+    background:rgba(0,0,0,.55);border:1px solid rgba(255,215,106,.5);color:#ffe9a8;
+    font-size:12px;font-weight:800;cursor:pointer;transition:.15s}
+  .shop-card .price:hover{background:rgba(90,60,5,.7);border-color:#ffe9a8}
+  .shop-card .price.buyable{box-shadow:0 0 10px rgba(255,215,106,.35)}
+  .shop-card .price.poor{opacity:.45;cursor:not-allowed}
+  .btn.small{font-size:12px;padding:6px 12px}
+  .shop-back{display:block;margin:4px auto 0}
 
   /* ---------- 通用面板 / 关卡 / 抽卡 ---------- */
   .panel{max-width:740px;margin:0 auto;background:linear-gradient(170deg,#241d12,#14100a);
@@ -445,6 +484,45 @@
   .info-pop .info-row{color:#cfc8b4}
   .info-pop .info-desc{color:#b9ad92;margin-top:3px}
   .info-pop .info-state{color:#ffd9a8;margin-top:4px;font-weight:700}
+  .info-pop .info-close{position:absolute;top:5px;right:8px;width:20px;height:20px;line-height:18px;text-align:center;
+    border-radius:50%;cursor:pointer;color:#cfc8b4;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    font-size:12px;transition:.15s}
+  .info-pop .info-close:hover{color:#fff;background:rgba(255,80,80,.35);border-color:#ff9b8d}
+
+  /* ---------- 升阶动画 ---------- */
+  #upgradeOverlay{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0);pointer-events:none;transition:background .45s ease}
+  #upgradeOverlay.on{background:rgba(0,0,0,.72)}
+  #upgradeOverlay .uo-card{position:relative;transition:transform .6s cubic-bezier(.3,.8,.3,1), opacity .4s;
+    transform:scale(1.25)}
+  #upgradeOverlay .uo-card .bcard{width:170px;height:264px;box-shadow:0 18px 50px rgba(0,0,0,.7)}
+  #upgradeOverlay .uo-card.shrink{transform:scale(.8) translateY(-46px)}
+  #upgradeOverlay .uo-flash{position:absolute;left:0;right:0;height:38%;top:-40%;
+    background:linear-gradient(180deg, transparent, rgba(255,215,90,.95) 55%, rgba(255,235,160,.75));
+    filter:blur(3px);animation:uoFlash .9s ease-in forwards}
+  @keyframes uoFlash{from{top:-40%}to{top:110%}}
+  #upgradeOverlay .uo-light{position:absolute;left:-20%;right:20%;top:-40%;height:60%;
+    background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.85) 50%, transparent 70%);
+    animation:uoLight .9s ease-in forwards}
+  @keyframes uoLight{from{top:-45%}to{top:115%}}
+  #upgradeOverlay .uo-note{position:absolute;top:calc(50% + 132px);left:50%;transform:translateX(-50%);
+    color:#fff;font-size:16px;font-weight:700;letter-spacing:1px;text-align:center;line-height:1.8;
+    text-shadow:0 2px 8px rgba(0,0,0,.85);white-space:nowrap;opacity:0;transition:opacity .4s ease .1s}
+  #upgradeOverlay .uo-note.show{opacity:1}
+
+  /* ---------- 新手教程 ---------- */
+  #tutWrap{position:fixed;inset:0;z-index:200;pointer-events:none}
+  #tutWrap.active{pointer-events:auto}
+  #tutSpotlight{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.7);
+    transition:all .5s ease;pointer-events:none;background:rgba(255,255,255,.04)}
+  #tutDialog{position:absolute;left:0;right:0;bottom:0;height:20vh;min-height:130px;
+    background:linear-gradient(180deg, rgba(34,25,12,.97), rgba(18,12,6,.98));
+    border-top:2px solid #f0c75e;padding:14px 24px 26px;pointer-events:auto;overflow-y:auto}
+  #tutDialog .tut-name{font-weight:800;font-size:15px;color:#ffd9a8;margin-bottom:4px;letter-spacing:1px}
+  #tutDialog .tut-text{color:#f3ecd9;font-size:14px;line-height:1.8;min-height:52px;white-space:pre-wrap}
+  #tutDialog .tut-next{position:absolute;right:18px;bottom:8px;font-size:12px;color:#b9ad92;
+    animation:tutBlink 1s infinite alternate}
+  @keyframes tutBlink{from{opacity:.35}to{opacity:1}}
 
   /* ---------- 对局开场提示 ---------- */
   #levelIntro{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
@@ -531,24 +609,33 @@
 <div id="app">
   <!-- ===== 主页面 + 选卡页面（横向滑动） ===== -->
   <div class="view-track" id="viewTrack">
-    <section class="view view-home" id="viewHome">
-      <button id="btnSlideDeck" class="slide-arrow left" title="向左滑动到选卡页面">◀</button>
-      <div class="home-box">
-        <h1 class="home-title">⚔️ 卡牌对战小游戏</h1>
-        <p class="home-sub" id="homeSub">对桌卡牌</p>
-        <div class="home-cur">💾 存档 <b id="homeSaveTag">-</b> &nbsp;·&nbsp; ⚔️ 时代 <b id="homeEraTag">原始部落</b> &nbsp;·&nbsp; 🎫 金券 <b id="goldTicketVal">1</b> &nbsp;·&nbsp; 🟣 紫券 <b id="purpleTicketVal">3</b></div>
-        <div class="home-btns">
-          <button id="btnStart" class="btn primary big">▶ 开始游戏</button>
-          <button id="btnGacha" class="btn big">🎴 抽卡页面</button>
-          <button id="btnSaves" class="btn">💾 存档管理</button>
+    <section class="view view-shop" id="viewShop">
+      <div class="shop-stage">
+        <div class="shop-coin">
+          <img id="shopCoinIcon" alt="" src="">
+          <span id="shopCoinVal">0</span>
         </div>
-        <div class="home-stats">
-          已拥有英雄 <span id="heroOwnedVal">0</span> / 5 · 关卡进度 <span id="levelProgVal">0</span> / 10
+        <h2 class="shop-title">🏪 商店</h2>
+        <div class="shop-section">
+          <div class="shop-sec-head">
+            <span>⚔️ 普通卡售卖</span>
+            <button id="btnShopRefreshNormal" class="btn small">刷新（1 币）</button>
+          </div>
+          <div class="shop-grid" id="shopNormal"></div>
         </div>
+        <div class="shop-section">
+          <div class="shop-sec-head">
+            <span>⭐ 英雄卡售卖</span>
+            <button id="btnShopRefreshHero" class="btn small">刷新（3 币）</button>
+          </div>
+          <div class="shop-grid" id="shopHero"></div>
+        </div>
+        <button id="btnShopBack" class="btn shop-back">→ 返回选卡</button>
       </div>
     </section>
 
     <section class="view view-deck" id="viewDeck">
+      <button id="btnSlideShop" class="slide-arrow left" title="向左滑动到商店">◀</button>
       <button id="btnSlideHome" class="slide-arrow right" title="返回主页">▶</button>
       <div class="deck-fit">
         <h2>🃏 选卡页面 <small>每局开局只能使用上方 12 个槽位中的卡牌</small></h2>
@@ -565,6 +652,24 @@
         </div>
         <div id="cardDetail" class="detail-panel hidden"></div>
         <div class="collection" id="collection"></div>
+      </div>
+    </section>
+
+    <section class="view view-home" id="viewHome">
+      <button id="btnSlideDeck" class="slide-arrow left" title="向左滑动到选卡页面">◀</button>
+      <div class="home-box">
+        <h1 class="home-title">⚔️ 卡牌对战小游戏</h1>
+        <p class="home-sub" id="homeSub">对桌卡牌</p>
+        <div class="home-cur">💾 存档 <b id="homeSaveTag">-</b> &nbsp;·&nbsp; ⚔️ 时代 <b id="homeEraTag">原始部落</b> &nbsp;·&nbsp; 🎫 金券 <b id="goldTicketVal">1</b> &nbsp;·&nbsp; 🟣 紫券 <b id="purpleTicketVal">3</b> &nbsp;·&nbsp; 🪙 <b id="homeCoinVal">0</b></div>
+        <div class="home-btns">
+          <button id="btnTutorial" class="btn">📖 新手教程</button>
+          <button id="btnStart" class="btn primary big">▶ 开始游戏</button>
+          <button id="btnGacha" class="btn big">🎴 抽卡页面</button>
+          <button id="btnSaves" class="btn">💾 存档管理</button>
+        </div>
+        <div class="home-stats">
+          已拥有英雄 <span id="heroOwnedVal">0</span> / 5 · 关卡进度 <span id="levelProgVal">0</span> / 10
+        </div>
       </div>
     </section>
   </div>
@@ -592,7 +697,7 @@
           <svg viewBox="0 0 100 150"><rect width="100" height="150" fill="#16264a"/><rect x="4" y="4" width="92" height="142" fill="none" stroke="#c9a24b" stroke-width="2"/><rect x="9" y="9" width="82" height="132" fill="none" stroke="#8a6d3b" stroke-width="1"/><path d="M50 14 L86 75 L50 136 L14 75 Z" fill="none" stroke="#c9a24b" stroke-width="2"/><path d="M14 14 L86 136 M86 14 L14 136" stroke="#5d4a86" stroke-width="1" opacity=".7"/><circle cx="50" cy="75" r="12" fill="none" stroke="#f0d9a0" stroke-width="2"/><circle cx="50" cy="75" r="3" fill="#f0d9a0"/></svg>
         </div>
       </div>
-      <div class="gacha-odds">每位英雄被抽出的概率相同 · 重复英雄自动转化为该英雄的神圣碎片 ×5 · 点击卡牌翻开</div>
+      <div class="gacha-odds">普通卡 75% · 传送币 ×5 15% · 英雄 10% · 重复卡自动叠加 · 点击卡牌翻开</div>
       <div id="gachaResult" class="gacha-result"></div>
       <div class="gacha-btns">
         <button id="btnPull1" class="btn">🟣 紫券单抽 ×1</button>
@@ -704,6 +809,17 @@
   </div>
 </div>
 
+<div id="upgradeOverlay"><div class="uo-card" id="uoCard"></div><div class="uo-note" id="uoNote"></div></div>
+
+<div id="tutWrap">
+  <div id="tutSpotlight"></div>
+  <div id="tutDialog">
+    <div class="tut-name" id="tutName"></div>
+    <div class="tut-text" id="tutText"></div>
+    <div class="tut-next">▼ 点击继续</div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -752,6 +868,11 @@ function eraStarterHero(eraIdx){
   return e && e.id === 'tribe' ? 'h_tribe_storm' : 'h_paladin';
 }
 
+function eraNormalIds(eraIdx){
+  const e = ERAS[eraIdx !== undefined ? eraIdx : eraIndex()];
+  return e && e.id === 'tribe' ? Object.keys(TRIBE_NORMAL_CARDS) : Object.keys(NORMAL_PLAYER_CARDS);
+}
+
 function nextEraIndex(){
   for(let i = eraIndex() + 1; i < ERAS.length; i++){
     if(ERAS[i].enabled) return i;
@@ -767,7 +888,7 @@ function evolveEra(){
   profile.firstWin = LEVELS.map(()=>false);
   profile.deck = eraDefaultDeck();
   const starter = eraStarterHero();
-  if(!profile.heroes[starter]) profile.heroes[starter] = { tier:1, shards:0 };
+  if(!profile.heroes[starter]) profile.heroes[starter] = { tier:1, owned:1 };
   saveProfile();
   return ERAS[nxt];
 }
@@ -1001,8 +1122,15 @@ function defaultProfile(){
     era: 0,
     goldTicket: 1,
     purpleTicket: 3,
-    heroes: { h_tribe_storm: { tier:1, shards:0 } },
-    deck: eraDefaultDeck(),
+    heroes: { h_tribe_storm: { tier:1, owned:1 } },
+    cards: {
+      tribe_archer:  { owned:1, tier:1 },
+      tribe_warrior: { owned:1, tier:1 },
+      tribe_spear:   { owned:1, tier:1 },
+      tribe_chief:   { owned:1, tier:1 }
+    },
+    eraCoins: { tribe: 5, egypt: 0, medieval: 0, modern: 0 },
+    deck: ['tribe_archer','tribe_warrior','tribe_spear','tribe_chief','','','','','h_tribe_storm'],
     firstWin: LEVELS.map(()=>false),
     unlocked: 1
   };
@@ -1018,17 +1146,34 @@ function sanitizeProfile(d){
   if(!ERAS[p.era] || !ERAS[p.era].enabled) p.era = 0;
   if(!p.firstWin || p.firstWin.length !== LEVELS.length) p.firstWin = LEVELS.map(()=>false);
   if(!p.heroes || typeof p.heroes !== 'object') p.heroes = defaultProfile().heroes;
+  if(!p.cards || typeof p.cards !== 'object') p.cards = defaultProfile().cards;
+  if(!p.eraCoins || typeof p.eraCoins !== 'object') p.eraCoins = defaultProfile().eraCoins;
+  for(const hid of Object.keys(p.heroes)){
+    const h = p.heroes[hid];
+    if(h && typeof h === 'object'){
+      h.tier = Math.min(Math.max(parseInt(h.tier, 10) || 1, 1), 5);
+      h.owned = Math.max(parseInt(h.owned, 10) || (h.shards ? 1 : 1), 1);
+      delete h.shards;
+    }
+  }
+  for(const cid of Object.keys(p.cards)){
+    const c = p.cards[cid];
+    if(c && typeof c === 'object'){
+      c.tier = Math.min(Math.max(parseInt(c.tier, 10) || 1, 1), 11);
+      c.owned = Math.max(parseInt(c.owned, 10) || 1, 1);
+    }
+  }
   const starter = eraStarterHero(p.era);
-  if(!p.heroes[starter]) p.heroes[starter] = { tier:1, shards:0 };
+  if(!p.heroes[starter]) p.heroes[starter] = { tier:1, owned:1 };
   if(Array.isArray(p.deck)){
-    const picked = p.deck.filter(id => id && isEraCard(id, p.era) && !heroDefOf(id)).slice(0, 8);
+    const ownedN = eraNormalIds(p.era).filter(id => p.cards[id]);
+    const picked = p.deck.filter(id => id && isEraCard(id, p.era) && !heroDefOf(id) && p.cards[id]).slice(0, 8);
     const hero = p.deck.find(id => id && heroDefOf(id) && isEraCard(id, p.era)) || eraStarterHero(p.era);
-    const eraNormals = eraDefaultDeck(p.era).slice(0, 8);
     p.deck = [];
-    for(let i = 0; i < 8; i++) p.deck.push(picked[i] || eraNormals[i] || '');
+    for(let i = 0; i < 8; i++) p.deck.push(picked[i] || ownedN[i] || '');
     p.deck.push(hero);
   } else {
-    p.deck = eraDefaultDeck(p.era);
+    p.deck = ['tribe_archer','tribe_warrior','tribe_spear','tribe_chief','','','','','h_tribe_storm'];
   }
   p.unlocked = Math.min(Math.max(parseInt(p.unlocked, 10) || 1, 1), LEVELS.length);
   return p;
@@ -1127,36 +1272,161 @@ function renderSaves(){
 }
 
 /* ================= 抽卡 / 升阶 ================= */
-const UP_COST = { 2:10, 3:20, 4:40, 5:80 };
+const MAX_CARD_TIER = 11;
+const MAX_HERO_TIER = 5;
+
+function eraCoinKey(){
+  return ({ tribe:'tribe', egypt:'egypt', medieval:'medieval', modern:'modern' })[eraData().id] || 'tribe';
+}
+function eraCoinName(){
+  return ({ tribe:'原始传送币', egypt:'荒漠传送币', medieval:'神圣传送币', modern:'全息传送币' })[eraData().id] || '原始传送币';
+}
+
+function cardTier(id){
+  if(heroDefOf(id)){
+    const h = profile.heroes[id];
+    return h ? h.tier : 1;
+  }
+  const c = profile.cards[id];
+  return c ? c.tier : 1;
+}
+function cardOwned(id){
+  if(heroDefOf(id)){
+    const h = profile.heroes[id];
+    return h ? Math.max(h.owned || 1, 1) : 1;
+  }
+  const c = profile.cards[id];
+  return c ? Math.max(c.owned || 1, 1) : 0;
+}
+function upgradeNeed(id){
+  // 升到下一阶所需重复卡 = 当前阶数 + 1（1→2 需 2 张，2→3 需 3 张…）
+  const t = cardTier(id);
+  return t + 1;
+}
+function cardMaxTier(id){ return heroDefOf(id) ? MAX_HERO_TIER : MAX_CARD_TIER; }
+
+function upgradeProgressHTML(id){
+  if(cardTier(id) >= cardMaxTier(id)){
+    return '<div class="upg-bar full"><div class="upg-fill" style="width:100%"></div><span>已满级</span></div>';
+  }
+  const avail = Math.max(cardOwned(id) - 1, 0);
+  const need = upgradeNeed(id);
+  const pct = Math.min(100, Math.round(avail / need * 100));
+  return `<div class="upg-bar"><div class="upg-fill" style="width:${pct}%"></div><span>${avail}/${need}</span></div>`;
+}
+
+function normalStats(def, tier){
+  const m = 1 + 0.08 * (tier - 1);
+  return { hp: Math.round(def.hp * m), atk: Math.round(def.atk * m) };
+}
+function heroStats(def, tier){
+  const m = 1 + 0.25 * (tier - 1);
+  return { hp: Math.round(def.hp*m), atk: Math.round(def.atk*m), power: Math.round((def.skill.power||0)*m), heal: Math.round((def.skill.power||0)*m), dotDmg: Math.round((def.skill.dotDmg||0)*m), reflect: Math.round((def.skill.reflect||0)*m), shield: Math.round((def.skill.shield||0)*m) };
+}
+function cardStats(def, tier){
+  return heroDefOf(def.id) ? heroStats(def, tier) : normalStats(def, tier);
+}
+
 function pullOne(){
+  const r = Math.random();
+  if(r < 0.75){
+    // 普通卡 ×1（75%）
+    const isTribe = eraData().id === 'tribe';
+    const pool = isTribe ? Object.keys(TRIBE_NORMAL_CARDS) : Object.keys(NORMAL_PLAYER_CARDS);
+    const id = pool[Math.floor(Math.random() * pool.length)];
+    const c = profile.cards[id] || { owned: 0, tier: 1 };
+    c.owned = (c.owned || 0) + 1;
+    profile.cards[id] = c;
+    return { type:'card', id, dup: c.owned > 1 };
+  }
+  if(r < 0.90){
+    // 当前时代传送币 ×5（15%）
+    const key = eraCoinKey();
+    profile.eraCoins[key] = (profile.eraCoins[key] || 0) + 5;
+    return { type:'coin', amount:5 };
+  }
+  // 英雄 ×1（10%）
   const pool = eraHeroPool();
   const id = pool[Math.floor(Math.random() * pool.length)];
   const h = profile.heroes[id];
   if(h){
-    h.shards += 5;
-    return { id, dup:true, shards:5 };
+    h.owned = (h.owned || 1) + 1;
+    return { type:'hero', id, dup:true };
   }
-  profile.heroes[id] = { tier:1, shards:0 };
-  return { id, dup:false, shards:0 };
+  profile.heroes[id] = { tier:1, owned:1 };
+  return { type:'hero', id, dup:false };
 }
 function pullTen(){ const out=[]; for(let i=0;i<10;i++) out.push(pullOne()); return out; }
-function heroStats(def, tier){
-  const m = 1 + 0.2 * (tier - 1);
-  return { hp: Math.round(def.hp*m), atk: Math.round(def.atk*m), power: Math.round((def.skill.power||0)*m), heal: Math.round((def.skill.power||0)*m) };
-}
-function upgradeHero(id){
-  const h = profile.heroes[id];
-  if(!h || h.tier >= 5){ openModal('提示', '该英雄已达最高 5 阶。', '<button class="btn" data-act="close">关闭</button>'); return; }
-  const cost = UP_COST[h.tier + 1];
-  if(h.shards < cost){
-    openModal('碎片不足', `升到 ${h.tier+1} 阶需要 ${cost} 枚【${heroDefOf(id).name}】的神圣碎片，当前 ${h.shards} 枚。`, '<button class="btn" data-act="close">关闭</button>');
+
+function upgradeCard(id){
+  const c = profile.cards[id];
+  if(!c) return;
+  if(c.tier >= MAX_CARD_TIER){ openModal('提示', '该卡牌已达最高 11 阶。', '<button class="btn" data-act="close">关闭</button>'); return; }
+  const need = upgradeNeed(id);
+  const available = Math.max(c.owned - 1, 0);
+  if(available < need){
+    openModal('重复卡不足', `升到 ${c.tier+1} 阶需要 ${need} 张重复卡，当前可用 ${available} 张。`, '<button class="btn" data-act="close">关闭</button>');
     return;
   }
-  h.shards -= cost;
+  c.owned -= need;
+  c.tier++;
+  saveProfile();
+  renderCardDetail(id);
+  renderDeck();
+  upgradeAnim(id);
+}
+
+function upgradeHero(id){
+  const h = profile.heroes[id];
+  if(!h || h.tier >= MAX_HERO_TIER){ openModal('提示', '该英雄已达最高 5 阶。', '<button class="btn" data-act="close">关闭</button>'); return; }
+  const need = upgradeNeed(id);
+  const available = Math.max((h.owned || 1) - 1, 0);
+  if(available < need){
+    openModal('重复卡不足', `升到 ${h.tier+1} 阶需要 ${need} 张【${heroDefOf(id).name}】的重复卡，当前可用 ${available} 张。`, '<button class="btn" data-act="close">关闭</button>');
+    return;
+  }
+  h.owned -= need;
   h.tier++;
   saveProfile();
   renderCardDetail(id);
   renderDeck();
+  upgradeAnim(id);
+}
+
+function upgradeAnim(id){
+  const def = PLAYER_CARDS[id];
+  if(!def) return;
+  const ov = $('upgradeOverlay');
+  const cardEl = $('uoCard');
+  const note = $('uoNote');
+  const t = cardTier(id);
+  const st = cardStats(def, t);
+  const prev = cardStats(def, t - 1);
+  cardEl.innerHTML = cardFaceHTML({ def }, { side: heroDefOf(id) ? 'hero' : 'player', extra:'', data:'' });
+  cardEl.classList.remove('shrink');
+  const flash = document.createElement('div');
+  flash.className = 'uo-flash';
+  cardEl.appendChild(flash);
+  const light = document.createElement('div');
+  light.className = 'uo-light';
+  cardEl.appendChild(light);
+  note.classList.remove('show');
+  note.textContent = '';
+  ov.classList.add('on');
+  setTimeout(() => {
+    cardEl.classList.add('shrink');
+    const lines = [];
+    if(st.hp !== prev.hp) lines.push(`生命 ${prev.hp} → ${st.hp}`);
+    if(st.atk !== prev.atk) lines.push(`攻击 ${prev.atk} → ${st.atk}`);
+    if(heroDefOf(id) && def.skill && def.skill.power && st.power !== prev.power) lines.push(`技能威力 ${prev.power} → ${st.power}`);
+    note.textContent = lines.length ? `${def.name} 升阶至 ${t} 阶：${lines.join('　')}` : `${def.name} 升阶至 ${t} 阶`;
+    note.classList.add('show');
+  }, 950);
+  setTimeout(() => {
+    ov.classList.remove('on');
+    cardEl.innerHTML = '';
+    note.classList.remove('show');
+  }, 3000);
 }
 
 /* ================= 工具函数 ================= */
@@ -1229,12 +1499,15 @@ function showLevelIntro(){
     const subEl = box.querySelector ? box.querySelector('.li-sub') : null;
     if(nameEl) nameEl.textContent = `第 ${L.id} 关`;
     if(subEl) subEl.textContent = L.name;
+    const handWrap = document.querySelector ? document.querySelector('.hand-wrap') : null;
+    if(handWrap) handWrap.style.visibility = 'hidden';
     box.classList.remove('hidden', 'in', 'out');
     setTimeout(() => box.classList.add('in'), 500);                     // 暂停后从左中速滑入
     setTimeout(() => { box.classList.remove('in'); box.classList.add('out'); }, 2700); // 停留 2.2 秒
     setTimeout(() => {
       box.classList.add('hidden');
       box.classList.remove('in', 'out');
+      if(handWrap) handWrap.style.visibility = '';
       res();
     }, 3300);
   });
@@ -1403,13 +1676,14 @@ function playCard(handIdx, slotIdx){
   }
   state.player.gold = Math.max(0, state.player.gold - cost);
   const hero = heroDef;
-  const heroTier = hero ? (profile.heroes[cardId] ? profile.heroes[cardId].tier : 1) : 1;
-  const maxHp = hero ? heroStats(hero, heroTier).hp : def.hp;
+  const tier = hero ? (profile.heroes[cardId] ? profile.heroes[cardId].tier : 1) : cardTier(cardId);
+  const st = hero ? heroStats(hero, tier) : normalStats(def, tier);
+  const maxHp = st.hp;
   state.playerField[slotIdx] = { def, uid: uid(), hp: maxHp, maxHp, attacked: false,
-    tier: heroTier, skillCd: 0, taunt: 0, shield: state.moonBless ? state.moonBless.shield : 0 };
+    tier, skillCd: 0, taunt: 0, shield: state.moonBless ? state.moonBless.shield : 0 };
   state.hand.splice(handIdx, 1);
   state.selectedHand = -1;
-  addLog(hero ? `你召唤英雄【${def.name}】（${heroTier}阶）→ 卡槽 ${slotIdx + 1}` : `你打出【${def.name}】→ 卡槽 ${slotIdx + 1}（花费 ${cost} 金币）`, 'player');
+  addLog(hero ? `你召唤英雄【${def.name}】（${tier}阶）→ 卡槽 ${slotIdx + 1}` : `你打出【${def.name}】(${tier}阶) → 卡槽 ${slotIdx + 1}（花费 ${cost} 金币）`, 'player');
   renderBattle();
 }
 
@@ -1435,7 +1709,8 @@ function validTargets(attackerIdx){
 }
 
 function effAtk(card){
-  return Math.max(1, (card.def.atk - (card.atkDebuff || 0)));
+  const base = card.tier ? cardStats(card.def, card.tier).atk : card.def.atk;
+  return Math.max(1, base - (card.atkDebuff || 0));
 }
 
 function frenzyActive(){
@@ -1940,27 +2215,29 @@ function checkEnd(){
   if(state.enemy.hp <= 0){
     state.over = true;
     busy = true;
-    const reward = applyVictoryRewards();
-    const next = levelIndex + 1;
-    if(next < LEVELS.length && next + 1 > profile.unlocked) profile.unlocked = next + 1;
-    saveProfile();
-    const L = LEVELS[levelIndex];
-    const evolved = levelIndex === LEVELS.length - 1 && nextEraIndex() >= 0;
-    let evo = null;
-    if(evolved) evo = evolveEra();
-    let html = '';
-    if(evolved){
-      html += '<button class="btn primary" data-act="evolved">进入新时代 ▶</button>';
-    } else if(levelIndex + 1 < LEVELS.length){
-      html += '<button class="btn primary" data-act="next">下一关 ▶</button>';
+    if(levelIndex === 0 && !tutorialWinDone[0]){
+      tutorialWinDone[0] = true;
+      applyVictoryRewards();
+      if(profile.unlocked < 2) profile.unlocked = 2;
+      saveProfile();
+      tutPlayLines([
+        { name: TUT_HERO, text: '哈，挺容易的嘛！看来马上就能去找魔王了！' },
+        { name: TUT_GRANDPA, text: '不错啊小伙子，不过可不能骄傲。接下来的关卡，只会越来越难。' },
+        { name: TUT_HERO, text: '不管怎样，我都想快点回到原来的世界！' }
+      ], () => { startTutorialLevel(1); });
+      return;
     }
-    html += '<button class="btn" data-act="retry">重新挑战</button>';
-    html += '<button class="btn" data-act="home">返回主页</button>';
-    const title = evolved ? '🎉 时代进化！' : '🎉 关卡胜利！';
-    const text = evolved
-      ? `你征服了【${L.name}】，部落文明迎来进化！\n进入【${evo ? evo.name : ''}】时代，从第 1 关重新开始。\n${reward}`
-      : `你击败了【${L.name}】的对手！\n${reward}`;
-    openModal(title, text, html);
+    if(levelIndex === 1 && !tutorialWinDone[1]){
+      tutorialWinDone[1] = true;
+      applyVictoryRewards();
+      saveProfile();
+      tutPlayLines([
+        { name: TUT_HERO, text: '这一关也拿下了！爷爷，我是不是很有天赋？' },
+        { name: TUT_GRANDPA, text: '哈哈，年轻人有干劲是好事。往后的路，就得靠你自己走啦。' }
+      ], () => { finishLevelWin(); });
+      return;
+    }
+    finishLevelWin();
   } else if(state.player.hp <= 0){
     state.over = true;
     busy = true;
@@ -2000,7 +2277,7 @@ function cardFaceHTML(card, opts){
   const skillBtn = (opts.field && hero && !opts.mini)
     ? `<button type="button" class="skill-btn" data-skill="${opts.slot}" ${card.skillCd > 0 ? 'disabled' : ''}>${card.skillCd > 0 ? '冷却' + card.skillCd : '✨技能'}</button>`
     : '';
-  const tierBadge = (opts.field && hero && !opts.mini) ? `<span class="tier-badge">★${card.tier}</span>` : '';
+  const tierBadge = opts.tier ? `<span class="tier-badge">★${opts.tier}</span>` : ((opts.field && hero && !opts.mini) ? `<span class="tier-badge">★${card.tier}</span>` : '');
   const goldChip = hero
     ? '<span class="cost gold-cost">★</span>'
     : `<span class="cost gold-cost">🪙${d.gold}</span>`;
@@ -2021,9 +2298,11 @@ function sideOf(defId){ return (HEROES[defId] || TRIBE_HEROES[defId]) ? 'hero' :
 /* ================= 视图切换 ================= */
 function showView(v){
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  if(v === 'home' || v === 'deck'){
+  if(v === 'home' || v === 'deck' || v === 'shop'){
     $('viewTrack').classList.add('active');
+    $('viewTrack').classList.toggle('show-shop', v === 'shop');
     $('viewTrack').classList.toggle('show-deck', v === 'deck');
+    $('viewShop').classList.add('active');
     $('viewHome').classList.add('active');
     $('viewDeck').classList.add('active');
   } else {
@@ -2042,8 +2321,48 @@ function renderHome(){
   $('homeSub').textContent = `对桌卡牌 · ${isTribe ? Object.keys(TRIBE_NORMAL_CARDS).length : Object.keys(NORMAL_PLAYER_CARDS).length} 兵种 · ${(isTribe ? Object.keys(TRIBE_HEROES).length : Object.keys(HEROES).length)} 英雄 · 10 关卡`;
   $('goldTicketVal').textContent = profile.goldTicket;
   $('purpleTicketVal').textContent = profile.purpleTicket;
+  $('homeCoinVal').textContent = profile.eraCoins[eraCoinKey()] || 0;
   $('heroOwnedVal').textContent = Object.keys(profile.heroes).length;
   $('levelProgVal').textContent = profile.unlocked;
+}
+
+/* ================= 商店 ================= */
+let shopState = { normals: [], heroes: [] };
+function rollShopNormals(){
+  const isTribe = eraData().id === 'tribe';
+  const pool = isTribe ? Object.keys(TRIBE_NORMAL_CARDS) : Object.keys(NORMAL_PLAYER_CARDS);
+  shopState.normals = shuffle(pool.slice()).slice(0, 6);
+}
+function rollShopHeroes(){
+  shopState.heroes = shuffle(eraHeroPool().slice()).slice(0, 2);
+}
+function renderShop(){
+  const coin = eraCoinKey();
+  const coinVal = profile.eraCoins[coin] || 0;
+  $('shopCoinVal').textContent = coinVal;
+  $('shopCoinIcon').src = 'icons/coin_' + coin + '.png';
+  const nPrice = 2, hPrice = 15;
+  const icon = $('shopCoinIcon');
+  icon.style.display = '';
+  icon.onerror = function(){ this.style.display = 'none'; };
+  $('shopNormal').innerHTML = shopState.normals.map(id => {
+    const def = PLAYER_CARDS[id];
+    const afford = coinVal >= nPrice;
+    return `<div class="shop-card">${cardFaceHTML({ def }, { side:'player', tier:cardTier(id), extra:'', data:` data-shop-n="${id}"` })}
+      <span class="price ${afford ? 'buyable' : 'poor'}" data-buy-n="${id}">🪙 ${nPrice}</span></div>`;
+  }).join('');
+  $('shopHero').innerHTML = shopState.heroes.map(id => {
+    const def = PLAYER_CARDS[id];
+    const afford = coinVal >= hPrice;
+    return `<div class="shop-card">${cardFaceHTML({ def }, { side:'hero', tier:cardTier(id), extra:'', data:` data-shop-h="${id}"` })}
+      <span class="price ${afford ? 'buyable' : 'poor'}" data-buy-h="${id}">🪙 ${hPrice}</span></div>`;
+  }).join('');
+}
+function openShop(){
+  if(!shopState.normals.length) rollShopNormals();
+  if(!shopState.heroes.length) rollShopHeroes();
+  renderShop();
+  showView('shop');
 }
 
 function renderDeck(){
@@ -2062,16 +2381,16 @@ function renderDeck(){
   const isTribe = eraData().id === 'tribe';
   const heroes = Object.keys(profile.heroes).filter(id => isTribe ? !!TRIBE_HEROES[id] : !!HEROES[id]);
   const normalPool = isTribe ? TRIBE_NORMAL_CARDS : NORMAL_PLAYER_CARDS;
-  const normalIds = Object.keys(normalPool);
+  const normalIds = Object.keys(normalPool).filter(id => profile.cards[id]);
   let html = '<h3>⭐ 英雄卡 <small>数值随阶提升，自带独特技能，进场需满足条件</small></h3><div class="col-grid">';
   for(const id of heroes){
     const def = PLAYER_CARDS[id];
-    html += cardFaceHTML({ def }, { side:'hero', extra:`col-card${profile.deck.includes(id) ? ' in-deck' : ''}`, data:` data-id="${id}"` });
+    html += `<div class="col-wrap">${cardFaceHTML({ def }, { side:'hero', tier:cardTier(id), extra:`col-card${profile.deck.includes(id) ? ' in-deck' : ''}`, data:` data-id="${id}"` })}${upgradeProgressHTML(id)}</div>`;
   }
-  html += `</div><h3>⚔️ 普通卡 <small>共 ${normalIds.length} 种 · 每张入组后自带 2 份进牌库</small></h3><div class="col-grid">`;
+  html += `</div><h3>⚔️ 普通卡 <small>已拥有 ${normalIds.length} 种 · 通过抽卡或商店获得 · 重复卡可升阶</small></h3><div class="col-grid">`;
   for(const id of normalIds){
     const def = PLAYER_CARDS[id];
-    html += cardFaceHTML({ def }, { side:'player', extra:`col-card${profile.deck.includes(id) ? ' in-deck' : ''}`, data:` data-id="${id}"` });
+    html += `<div class="col-wrap">${cardFaceHTML({ def }, { side:'player', tier:cardTier(id), extra:`col-card${profile.deck.includes(id) ? ' in-deck' : ''}`, data:` data-id="${id}"` })}${upgradeProgressHTML(id)}</div>`;
   }
   html += '</div>';
   $('collection').innerHTML = html;
@@ -2085,21 +2404,28 @@ function renderCardDetail(id){
   const def = PLAYER_CARDS[id];
   const hero = heroDefOf(id);
   const inDeck = profile.deck.includes(id);
-  let html = `<div class="detail-art">${cardFaceHTML({ def }, { side: sideOf(id), extra:'', data:'' })}</div><div class="detail-info">`;
+  const tier = cardTier(id);
+  const st = cardStats(def, tier);
+  let html = `<div class="detail-art">${cardFaceHTML({ def }, { side: sideOf(id), tier, extra:'', data:'' })}</div><div class="detail-info">`;
   html += `<h3>${def.name}${hero ? ' <span style="color:#d8b2ff">· 英雄</span>' : ''}</h3>`;
-  html += `<div class="row">❤️ 1阶生命 ${def.hp} · ⚔️ 攻击 ${def.atk} · 🪙 费用 ${hero ? '无需金币（满足条件进场）' : def.gold} · ⚡ 攻击体力 ${def.stamina}</div>`;
+  html += `<div class="row">❤️ 当前 ${tier} 阶生命 ${st.hp}（基础 ${def.hp}） · ⚔️ 攻击 ${st.atk}（基础 ${def.atk}） · 🪙 费用 ${hero ? '无需金币（满足条件进场）' : def.gold} · ⚡ 攻击体力 ${def.stamina}</div>`;
   html += `<div class="row">🎯 ${def.range === 'melee' ? '近战：只能攻击敌方最前排' : '远程：可攻击任意目标'}${def.splash ? ' · 💥 群体溅射（同排敌人受到 50% 伤害）' : ''}</div>`;
   if(hero){
     const h = profile.heroes[id];
-    const st = heroStats(hero, h.tier);
     html += `<div class="skill">✨ 技能【${hero.skill.name}】· 冷却 ${hero.skill.cd} 回合 · 消耗体力 ${hero.skill.staminaCost}<br>${hero.skill.desc}<br>进场条件：${hero.cond}</div>`;
     html += `<div class="row">⭐ 当前 ${h.tier} 阶 · 生命 ${st.hp} · 攻击 ${st.atk}</div>`;
-    html += `<div class="row">💠 ${hero.name}的神圣碎片 ×${h.shards}（升 ${Math.min(h.tier + 1, 5)} 阶需 ${UP_COST[h.tier + 1] || '已满'}）</div>`;
+  }
+  const avail = Math.max(cardOwned(id) - 1, 0);
+  if(tier < cardMaxTier(id)){
+    html += `<div class="row">🃏 重复卡 ×${avail}（升 ${tier + 1} 阶还需 ${Math.max(upgradeNeed(id) - avail, 0)} 张）</div>`;
+    html += `<div class="upg-bar"><div class="upg-fill" style="width:${Math.min(100, Math.round(avail / upgradeNeed(id) * 100))}%"></div><span>${avail}/${upgradeNeed(id)}</span></div>`;
+  } else {
+    html += `<div class="row">🃏 重复卡 ×${avail} · 已达最高阶</div>`;
   }
   html += '</div><div class="detail-btns">';
   if(inDeck) html += '<button class="btn" data-act="remdeck">移出牌组</button>';
   else html += '<button class="btn primary" data-act="adddeck">加入牌组</button>';
-  if(hero && profile.heroes[id].tier < 5) html += '<button class="btn" data-act="upgrade">升阶（消耗碎片）</button>';
+  if(tier < cardMaxTier(id)) html += '<button class="btn" data-act="upgrade">升阶（消耗重复卡）</button>';
   html += '</div>';
   panel.innerHTML = html;
   panel.classList.remove('hidden');
@@ -2114,13 +2440,26 @@ function renderGacha(){
   for(let i = 0; i < 12; i++){
     const r = gachaLast[i];
     if(!r){ slots.push('<div class="gacha-card g-empty"></div>'); continue; }
-    const def = heroDefOf(r.id);
+    let def, side, tag;
+    if(r.type === 'coin'){
+      def = { id:'era_coin', name: eraCoinName(), glyph:'coin', range:'ranged', gold:0, stamina:0, hp:1, atk:0, tint:'#ffd76a', desc:'可在商店使用的时代传送币。' };
+      side = 'player';
+      tag = `<span style="color:#ffd76a">🪙 ${eraCoinName()} ×${r.amount}</span>`;
+    } else if(r.type === 'card'){
+      def = PLAYER_CARDS[r.id];
+      side = heroDefOf(r.id) ? 'hero' : 'player';
+      tag = r.dup ? '重复卡 +1' : '<span style="color:#8fe0b0">🎉 新卡！</span>';
+    } else {
+      def = PLAYER_CARDS[r.id];
+      side = 'hero';
+      tag = r.dup ? '重复英雄 +1' : '<span style="color:#ffd76a">🎉 新英雄！</span>';
+    }
     slots.push(`<div class="gacha-card g-flip${r.dup ? '' : ' new'}">
       <div class="g-inner">
         <div class="g-face g-back">${cardBackSVG()}</div>
-        <div class="g-face g-front">${cardFaceHTML({ def }, { side:'hero', extra:'', data:'' })}</div>
+        <div class="g-face g-front">${cardFaceHTML({ def }, { side, extra:'', data:'' })}</div>
       </div>
-      <div class="tag">${r.dup ? '碎片 ×' + r.shards : '🎉 新英雄！'}</div>
+      <div class="tag">${tag}</div>
     </div>`);
   }
   $('gachaResult').innerHTML = slots.join('');
@@ -2261,27 +2600,29 @@ function renderHalf(side, vt, selecting){
   }
 }
 
+function renderHandCards(limit){
+  if(!state.hand.length) return '<div class="hand-empty">手牌为空，等待下一回合补充</div>';
+  const n = limit === undefined ? state.hand.length : Math.min(limit, state.hand.length);
+  return state.hand.slice(0, n).map((id, i) => {
+    const d = PLAYER_CARDS[id];
+    const hero = heroDefOf(id);
+    const locked = !!(hero && !heroUnlocked(id));
+    const poor = state.player.gold < d.gold;
+    const extra = `hcard${i === state.selectedHand ? ' selected' : ''}${(poor || locked) ? ' poor' : ''}${locked ? ' locked' : ''}`;
+    let badges = '';
+    if(locked) badges += `<span class="lock-tag">🔒 ${hero.cond}</span>`;
+    else if(poor) badges += '<span class="poor-tag">金币不足</span>';
+    return cardFaceHTML({ def:d }, { side: sideOf(id), extra, data:` data-hand="${i}"`, draggable:!(locked || poor), badges });
+  }).join('');
+}
+
 function renderHand(){
   const h = $('hand');
   if(drawFx > 0){
     h.innerHTML = '<div class="hand-empty">🃏 正在从牌堆抽牌…</div>';
     return;
   }
-  if(!state.hand.length){
-    h.innerHTML = '<div class="hand-empty">手牌为空，等待下一回合补充</div>';
-  } else {
-    h.innerHTML = state.hand.map((id, i) => {
-      const d = PLAYER_CARDS[id];
-      const hero = heroDefOf(id);
-      const locked = !!(hero && !heroUnlocked(id));
-      const poor = state.player.gold < d.gold;
-      let extra = `hcard${i === state.selectedHand ? ' selected' : ''}${(poor || locked) ? ' poor' : ''}${locked ? ' locked' : ''}`;
-      let badges = '';
-      if(locked) badges += `<span class="lock-tag">🔒 ${hero.cond}</span>`;
-      else if(poor) badges += '<span class="poor-tag">金币不足</span>';
-      return cardFaceHTML({ def:d }, { side: sideOf(id), extra, data:` data-hand="${i}"`, draggable:!(locked || poor), badges });
-    }).join('');
-  }
+  h.innerHTML = renderHandCards();
   $('handCount').textContent = `(${state.hand.length})`;
 }
 
@@ -2386,8 +2727,11 @@ async function animateHandDraw(defs){
   await delay(80);
   const from = deckCenter('player');
   const to = handCenter();
+  const oldCount = Math.max(0, state.hand.length - defs.length);
+  const handEl = $('hand');
   for(let i = 0; i < defs.length; i++){
     await flyCard(defs[i], from, { x: to.x + (i - (defs.length - 1) / 2) * 24, y: to.y }, 540);
+    if(handEl && state.hand.length) handEl.innerHTML = renderHandCards(oldCount + i + 1);
     await delay(60);
   }
   drawFx--;
@@ -2408,15 +2752,19 @@ async function animateGachaPulls(){
   const pr = pack && pack.getBoundingClientRect ? pack.getBoundingClientRect() : { left: 0, top: 0, width: 120, height: 180 };
   const from = { x: pr.left + pr.width / 2, y: pr.top + pr.height / 2 };
   const grid = $('gachaResult');
-  grid.classList.add('animating');
   const cards = grid.querySelectorAll ? Array.from(grid.querySelectorAll('.gacha-card')) : [];
+  cards.forEach(c => { c.style.opacity = '0'; });
   for(let i = 0; i < items.length; i++){
     const r = cards[i] ? cards[i].getBoundingClientRect() : null;
     const to = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: from.x, y: from.y + 70 };
-    await flyCard(heroDefOf(items[i].id), from, to, 460, true, 'dfx-lg');
+    const it = items[i];
+    const def = it.type === 'coin'
+      ? { id:'era_coin', name: eraCoinName(), glyph:'coin', range:'ranged', gold:0, stamina:0, hp:1, atk:0, tint:'#ffd76a', desc:'' }
+      : PLAYER_CARDS[it.id];
+    await flyCard(def, from, to, 460, true, 'dfx-lg');
+    if(cards[i]) cards[i].style.opacity = '1';
     await delay(70);
   }
-  grid.classList.remove('animating');
 }
 
 function fitScale(){
@@ -2678,7 +3026,7 @@ function showInfo(def, opts){
   const pop = $('infoPop');
   const hero = (HEROES[def.id] || TRIBE_HEROES[def.id]) !== undefined;
   const side = hero ? 'hero' : opts.side;
-  let html = `<div class="info-name ${side}">${def.name}${hero ? ' · 英雄' : ''}</div>`;
+  let html = `<div class="info-close" title="关闭">✕</div><div class="info-name ${side}">${def.name}${hero ? ' · 英雄' : ''}</div>`;
   html += `<div class="info-row">🪙 ${def.gold !== undefined ? def.gold + ' 金币' : '满足条件进场'} · ⚡ 体力 ${def.stamina}</div>`;
   html += `<div class="info-row">⚔ 初始攻击 ${def.atk} · ❤ 初始生命 ${def.hp}${opts.curHp !== undefined ? `（当前 ${opts.curHp}）` : ''}</div>`;
   html += `<div class="info-row">🎯 ${def.range === 'melee' ? '近战：攻击敌方最前排' : '远程：可攻击任意目标'}${def.splash ? ' · 💥 溅射' : ''}</div>`;
@@ -2724,9 +3072,260 @@ function clearDragState(){
   document.querySelectorAll('.dragging,.drop-hint').forEach(el => el.classList.remove('dragging','drop-hint'));
 }
 
+/* ================= 新手教程 ================= */
+const TUT_GRANDPA = '慈祥的老爷爷';
+const TUT_HERO = '冒险家';
+let tutActive = false;
+let tutSteps = [];
+let tutIdx = 0;
+let tutTyping = false;
+
+const TUT_SCRIPT = [
+  { name: TUT_GRANDPA, text: '哎哟喂……老夫在这片大陆上活了快一百年，今儿倒是头一回见着你这般打扮的年轻人。', focus: '#btnTutorial' },
+  { name: TUT_HERO, text: '老先生您好！我……其实我自己也说不上来，只记得一阵白光，就莫名其妙掉到这儿来了。', focus: '#homeSub' },
+  { name: TUT_GRANDPA, text: '呵呵，有趣有趣。看你这孩子满脸心切的样子，是想回家吧？老夫虽不晓得你来自何方，但相逢即是缘，便教你些在这片大陆活下去的门道。', focus: '#btnTutorial' },
+  { name: TUT_GRANDPA, text: '来，先把这家里里外外认个遍。你眼前这个「开始游戏」，就是踏上征程的大门。', focus: '#btnStart' },
+  { name: TUT_GRANDPA, text: '点进去之后，会看到关卡选择。每一关都有对手等着你，打满十关，就能带着部落走向新的时代。', focus: '.level-list', action: next => { showView('levels'); renderLevelsView(); setTimeout(()=>next(), 120); } },
+  { name: TUT_HERO, text: '哦？也就是说我一路打过去就对了？那倒是不难理解。', focus: '#levelList' },
+  { name: TUT_GRANDPA, text: '正是。走，咱们回主屋，再看看别的家当。', focus: '#btnGacha', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '这个「抽卡页面」，是冒险家们招兵买马的地方。普通卡、英雄，还有老夫攒下的传送币，都从那儿来。', focus: '#btnGacha' },
+  { name: TUT_HERO, text: '抽卡？听起来像碰运气，不过运气也是实力的一部分嘛。', focus: '#gachaPack', action: next => { showView('gacha'); renderGacha(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '看见这牌堆没有？点上面的按钮，卡牌就会一张张飞出来。抽到重复的卡牌也别扔，攒着能升阶，让卡牌越变越强。', focus: '#gachaPack' },
+  { name: TUT_GRANDPA, text: '好了，家当看完，回主屋去，还有一处地方得跟你交代。', focus: '#btnSaves', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '「存档管理」——冒险家们最要紧的行囊。最多能存四份，各走各的路，互不相欠。', focus: '#btnSaves' },
+  { name: TUT_HERO, text: '那就存一份，免得我哪天走丢了连家都找不着。', focus: '#saveList', action: next => { showView('saves'); renderSaves(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '存好档，心里就踏实了。走，再带你去看看你出征前要打点的「选卡」——就是主屋左边那个箭头。', focus: '#btnSlideDeck', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '点这个左箭头，就进到选卡页面啦。左边是你选中的英雄，中间是这一局要带的卡组。', focus: '#btnSlideDeck', action: next => { showView('deck'); renderDeck(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '下面是你的卡牌收藏，抽到的新卡都会出现在这里。每张卡底下那条黄条，就是升阶的进度，攒够重复卡就能升阶。', focus: '.collection' },
+  { name: TUT_HERO, text: '明白了！选好卡牌，就能去挑战关卡了。那……我要怎样才能回到原来的世界呢？', focus: '#heroDeckSlot' },
+  { name: TUT_GRANDPA, text: '哎……说到这个，老夫知道的其实也少得可怜。只听说，想要离开这片土地，怕是非找到魔王不可。', focus: '#btnStart', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '老夫年轻时，偶然遇见一位有幸从魔窟里逃回来的人。他说那魔王手中握着一门术法，能打开通往另一层位面的通路。', focus: '#homeSub' },
+  { name: TUT_GRANDPA, text: '老夫观你这孩子，眉眼之间确实不像这世间之人。既然你心切想要回家，老夫便陪你走这一程罢。', focus: '#btnStart' },
+  { name: TUT_GRANDPA, text: '不过话说在前头，前路凶险，你可要想清楚了再上路。', focus: '#btnStart' },
+  { name: TUT_HERO, text: '想清楚了！不管前面是什么，我都要试试看！', focus: '#btnStart' },
+  { name: TUT_GRANDPA, text: '好！有志气。那咱们这就启程——第一关，老夫先给你搭把手。', focus: '#btnStart', action: next => {
+    tutEnd();
+    startTutorialLevel(0);
+    next();
+  } }
+];
+
+function tutFocus(selector){
+  const sp = $('tutSpotlight');
+  const el = selector ? document.querySelector(selector) : null;
+  if(el){
+    const r = el.getBoundingClientRect();
+    sp.style.left = (r.left - 10) + 'px';
+    sp.style.top = (r.top - 10) + 'px';
+    sp.style.width = (r.width + 20) + 'px';
+    sp.style.height = (r.height + 20) + 'px';
+  } else {
+    sp.style.left = '-10%'; sp.style.top = '-10%';
+    sp.style.width = '120%'; sp.style.height = '120%';
+  }
+}
+
+function tutType(text, name, done){
+  $('tutName').textContent = name;
+  const el = $('tutText');
+  el.textContent = '';
+  tutTyping = true;
+  let i = 0;
+  const timer = setInterval(() => {
+    el.textContent = text.slice(0, ++i);
+    if(i >= text.length){
+      clearInterval(timer);
+      tutTyping = false;
+      if(done) done();
+    }
+  }, 32);
+}
+
+function runTutStep(step){
+  tutFocus(step.focus || null);
+  tutType(step.text, step.name || TUT_GRANDPA, null);
+}
+
+function tutNext(){
+  tutIdx++;
+  if(tutIdx >= tutSteps.length){ tutEnd(); return; }
+  runTutStep(tutSteps[tutIdx]);
+}
+
+function tutBegin(){
+  if(tutActive) return;
+  tutActive = true;
+  $('tutWrap').classList.add('active');
+  showView('home');
+  renderHome();
+  tutSteps = TUT_SCRIPT.slice();
+  tutIdx = 0;
+  runTutStep(tutSteps[0]);
+}
+
+function tutEnd(){
+  tutActive = false;
+  tutSteps = [];
+  tutLines = [];
+  $('tutWrap').classList.remove('active');
+  $('tutSpotlight').style.cssText = '';
+  $('tutText').textContent = '';
+  $('tutName').textContent = '';
+}
+
+let tutLines = [];
+let tutLineIdx = 0;
+let tutLineDone = null;
+function tutLineShow(){
+  if(tutLineIdx >= tutLines.length){
+    tutActive = false;
+    $('tutWrap').classList.remove('active');
+    $('tutSpotlight').style.cssText = '';
+    $('tutText').textContent = '';
+    $('tutName').textContent = '';
+    const d = tutLineDone; tutLineDone = null;
+    if(d) d();
+    return;
+  }
+  const l = tutLines[tutLineIdx++];
+  tutFocus(l.focus || null);
+  tutType(l.text, l.name || TUT_GRANDPA, null);
+}
+function tutPlayLines(lines, done){
+  tutLines = lines.slice();
+  tutLineIdx = 0;
+  tutLineDone = done;
+  tutActive = true;
+  $('tutWrap').classList.add('active');
+  tutLineShow();
+}
+
+$('tutDialog').addEventListener('click', () => {
+  if(!tutActive || tutTyping) return;
+  if(tutLines.length){ tutLineShow(); return; }
+  const step = tutSteps[tutIdx];
+  if(step && step.action) step.action(tutNext);
+  else tutNext();
+});
+$('btnTutorial').addEventListener('click', () => tutBegin());
+
+/* 教程关卡：赠送卡牌与剧情 */
+let tutorialWinDone = { 0: false, 1: false };
+function startTutorialLevel(lv){
+  if(lv === 0){
+    tutPlayLines([
+      { name: TUT_GRANDPA, text: '孩子，爷爷虽然老了，但手里还是攒了些积蓄的。这头两关，就给你点小小的帮助吧。' }
+    ], () => { newGame(0).then(() => giveTutorialCards(0)); });
+  } else if(lv === 1){
+    tutPlayLines([
+      { name: TUT_GRANDPA, text: '我伟大的冒险家啊……爷爷恐怕不能再陪你了。部落里的其他人，还等着爷爷回去照看呢。' },
+      { name: TUT_GRANDPA, text: '不过走之前，爷爷还可以给你留点东西。拿着它，一路小心。' }
+    ], () => { newGame(1).then(() => giveTutorialCards(1)); });
+  } else {
+    newGame(lv);
+  }
+}
+
+function giveTutorialCards(lv){
+  const gifts = lv === 0
+    ? [ { slot: 1, id: 'tribe_warrior' }, { slot: 6, id: 'tribe_spear' } ]
+    : [ { slot: 2, id: 'tribe_boar' } ];
+  gifts.forEach(g => {
+    const def = PLAYER_CARDS[g.id];
+    const st = normalStats(def, 1);
+    state.playerField[g.slot] = { def, uid: uid(), hp: st.hp, maxHp: st.hp, attacked: false, tier: 1, skillCd: 0, taunt: 0, gift: true };
+  });
+  renderBattle();
+  gifts.forEach((g, i) => {
+    const def = PLAYER_CARDS[g.id];
+    const slotEl = document.querySelector(`[data-field="${g.slot}"]`);
+    if(slotEl){
+      const r = slotEl.getBoundingClientRect();
+      const to = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      setTimeout(() => flyCard(def, { x: -140, y: to.y }, to, 520), i * 200);
+    }
+  });
+  addLog(lv === 0 ? '老爷爷赠送了【部落勇士】和【部落投矛手】！' : '老爷爷赠送了【野猪骑士】！', 'gain');
+  renderBattle();
+}
+
+function finishLevelWin(){
+  const reward = applyVictoryRewards();
+  const next = levelIndex + 1;
+  if(next < LEVELS.length && next + 1 > profile.unlocked) profile.unlocked = next + 1;
+  saveProfile();
+  const L = LEVELS[levelIndex];
+  const evolved = levelIndex === LEVELS.length - 1 && nextEraIndex() >= 0;
+  let evo = null;
+  if(evolved) evo = evolveEra();
+  let html = '';
+  if(evolved){
+    html += '<button class="btn primary" data-act="evolved">进入新时代 ▶</button>';
+  } else if(levelIndex + 1 < LEVELS.length){
+    html += '<button class="btn primary" data-act="next">下一关 ▶</button>';
+  }
+  html += '<button class="btn" data-act="retry">重新挑战</button>';
+  html += '<button class="btn" data-act="home">返回主页</button>';
+  const title = evolved ? '🎉 时代进化！' : '🏆 关卡胜利！';
+  const text = evolved
+    ? `你征服了【${L.name}】，部落文明迎来进化！\n进入【${evo ? evo.name : ''}】时代，从第 1 关重新开始。\n${reward}`
+    : `你击败了【${L.name}】的对手！\n${reward}`;
+  openModal(title, text, html);
+}
+
 /* ================= 事件绑定 ================= */
 $('btnSlideDeck').addEventListener('click', () => { showView('deck'); renderDeck(); });
 $('btnSlideHome').addEventListener('click', () => showView('home'));
+$('btnSlideShop').addEventListener('click', () => openShop());
+$('btnShopBack').addEventListener('click', () => showView('deck'));
+$('btnShopRefreshNormal').addEventListener('click', () => {
+  const coin = eraCoinKey();
+  if((profile.eraCoins[coin] || 0) < 1){ openModal('传送币不足', `刷新普通卡需要 1 枚${eraCoinName()}。`, '<button class="btn" data-act="close">关闭</button>'); return; }
+  profile.eraCoins[coin]--;
+  rollShopNormals();
+  saveProfile();
+  renderShop();
+  renderHome();
+});
+$('btnShopRefreshHero').addEventListener('click', () => {
+  const coin = eraCoinKey();
+  if((profile.eraCoins[coin] || 0) < 3){ openModal('传送币不足', `刷新英雄卡需要 3 枚${eraCoinName()}。`, '<button class="btn" data-act="close">关闭</button>'); return; }
+  profile.eraCoins[coin] -= 3;
+  rollShopHeroes();
+  saveProfile();
+  renderShop();
+  renderHome();
+});
+$('shopNormal').addEventListener('click', e => {
+  const b = e.target.closest('[data-buy-n]');
+  if(!b) return;
+  const id = b.dataset.buyN;
+  const coin = eraCoinKey();
+  if((profile.eraCoins[coin] || 0) < 2){ openModal('传送币不足', `购买普通卡需要 2 枚${eraCoinName()}。`, '<button class="btn" data-act="close">关闭</button>'); return; }
+  profile.eraCoins[coin] -= 2;
+  const c = profile.cards[id] || { owned: 0, tier: 1 };
+  c.owned = (c.owned || 0) + 1;
+  profile.cards[id] = c;
+  saveProfile();
+  renderShop();
+  renderHome();
+  renderDeck();
+});
+$('shopHero').addEventListener('click', e => {
+  const b = e.target.closest('[data-buy-h]');
+  if(!b) return;
+  const id = b.dataset.buyH;
+  const coin = eraCoinKey();
+  if((profile.eraCoins[coin] || 0) < 15){ openModal('传送币不足', `购买英雄需要 15 枚${eraCoinName()}。`, '<button class="btn" data-act="close">关闭</button>'); return; }
+  profile.eraCoins[coin] -= 15;
+  const h = profile.heroes[id];
+  if(h) h.owned = (h.owned || 1) + 1;
+  else profile.heroes[id] = { tier: 1, owned: 1 };
+  saveProfile();
+  renderShop();
+  renderHome();
+  renderDeck();
+});
 $('btnStart').addEventListener('click', () => {
   if(activeSlot < 0){ renderSaves(); showView('saves'); return; }
   renderLevelsView(); showView('levels');
@@ -2793,7 +3392,8 @@ $('cardDetail').addEventListener('click', e => {
     const i = heroDefOf(deckSel) ? 8 : profile.deck.slice(0, 8).indexOf(deckSel);
     if(i >= 0){ profile.deck[i] = ''; saveProfile(); renderDeck(); }
   } else if(act === 'upgrade'){
-    upgradeHero(deckSel);
+    if(heroDefOf(deckSel)) upgradeHero(deckSel);
+    else upgradeCard(deckSel);
   }
 });
 $('heroDeckSlot').addEventListener('click', () => {
@@ -3046,6 +3646,9 @@ $('endTurnBtn').addEventListener('click', () => {
   state.selectedField = -1;
   renderBattle();
   enemyTurn();
+});
+$('infoPop').addEventListener('click', e => {
+  if(e.target.closest('.info-close')) hideInfo();
 });
 $('restartBtn').addEventListener('click', () => newGame(state.level));
 
