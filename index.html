@@ -122,7 +122,7 @@
   .detail-btns{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
 
   /* ---------- 商店页面 ---------- */
-  .view-shop{height:100vh;overflow-y:auto;background:url('bg-deck.jpg') center/cover no-repeat, #0a1226;
+  .view-shop{height:100vh;overflow-y:auto;background:url('bg-shop.jpg') center/cover no-repeat, #0a1226;
     position:relative;padding:0}
   .view-shop::before{content:'';position:fixed;inset:0;pointer-events:none;
     background:radial-gradient(120% 100% at 50% 45%, rgba(6,10,22,.10), rgba(4,7,16,.42))}
@@ -402,6 +402,10 @@
   .g-back svg{width:100%;height:100%;display:block}
   .g-flip:not(.flipped) .tag{display:none}
   .g-flip:not(.flipped)::after{content:'点击翻开';position:absolute;left:0;right:0;bottom:-17px;text-align:center;font-size:10px;color:#f6dfa0;text-shadow:0 1px 2px #000}
+  .coin-face{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background:radial-gradient(circle at 50% 38%, #2a2418, #161006 75%)}
+  .coin-face img{width:62%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55))}
+  .coin-face span{font-size:18px;font-weight:800;color:#ffe9a8;text-shadow:0 2px 6px rgba(0,0,0,.8)}
 
   /* ---------- 指向攻击 / 特效 ---------- */
   .bcard.aiming{outline:2px solid rgba(255,180,80,.75);outline-offset:1px;box-shadow:0 0 12px rgba(255,180,80,.45)}
@@ -497,31 +501,38 @@
     transform:scale(1.25)}
   #upgradeOverlay .uo-card .bcard{width:170px;height:264px;box-shadow:0 18px 50px rgba(0,0,0,.7)}
   #upgradeOverlay .uo-card.shrink{transform:scale(.8) translateY(-46px)}
-  #upgradeOverlay .uo-flash{position:absolute;left:0;right:0;height:38%;top:-40%;
-    background:linear-gradient(180deg, transparent, rgba(255,215,90,.95) 55%, rgba(255,235,160,.75));
-    filter:blur(3px);animation:uoFlash .9s ease-in forwards}
-  @keyframes uoFlash{from{top:-40%}to{top:110%}}
-  #upgradeOverlay .uo-light{position:absolute;left:-20%;right:20%;top:-40%;height:60%;
-    background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.85) 50%, transparent 70%);
-    animation:uoLight .9s ease-in forwards}
-  @keyframes uoLight{from{top:-45%}to{top:115%}}
+  #upgradeOverlay .uo-frame{position:absolute;inset:-4px;border-radius:16px;overflow:hidden;pointer-events:none;
+    border:3px solid rgba(240,199,94,.3);box-shadow:0 0 22px rgba(240,199,94,.25)}
+  #upgradeOverlay .uo-shine{position:absolute;left:-10%;right:-10%;height:34%;top:-38%;
+    background:linear-gradient(180deg, transparent 0%, rgba(255,215,90,.95) 48%, rgba(255,235,160,.8) 52%, transparent 100%);
+    filter:blur(2px);animation:uoShine 1.1s ease-in forwards}
+  @keyframes uoShine{from{top:-38%}to{top:112%}}
+  #upgradeOverlay .uo-hint{position:absolute;bottom:-38px;left:50%;transform:translateX(-50%);
+    color:#ffe9a8;font-size:13px;letter-spacing:2px;opacity:0;transition:opacity .4s ease .1s;
+    text-shadow:0 2px 6px rgba(0,0,0,.9);white-space:nowrap}
+  #upgradeOverlay .uo-hint.show{opacity:1}
   #upgradeOverlay .uo-note{position:absolute;top:calc(50% + 132px);left:50%;transform:translateX(-50%);
     color:#fff;font-size:16px;font-weight:700;letter-spacing:1px;text-align:center;line-height:1.8;
     text-shadow:0 2px 8px rgba(0,0,0,.85);white-space:nowrap;opacity:0;transition:opacity .4s ease .1s}
   #upgradeOverlay .uo-note.show{opacity:1}
 
   /* ---------- 新手教程 ---------- */
-  #tutWrap{position:fixed;inset:0;z-index:200;pointer-events:none}
-  #tutWrap.active{pointer-events:auto}
+  #tutWrap{position:fixed;inset:0;z-index:200;pointer-events:none;display:none}
+  #tutWrap.active{display:block}
   #tutSpotlight{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.7);
     transition:all .5s ease;pointer-events:none;background:rgba(255,255,255,.04)}
   #tutDialog{position:absolute;left:0;right:0;bottom:0;height:20vh;min-height:130px;
     background:linear-gradient(180deg, rgba(34,25,12,.97), rgba(18,12,6,.98));
-    border-top:2px solid #f0c75e;padding:14px 24px 26px;pointer-events:auto;overflow-y:auto}
+    border-top:2px solid #f0c75e;padding:14px 24px 26px;pointer-events:auto;overflow-y:auto;
+    user-select:none;-webkit-user-select:none}
   #tutDialog .tut-name{font-weight:800;font-size:15px;color:#ffd9a8;margin-bottom:4px;letter-spacing:1px}
   #tutDialog .tut-text{color:#f3ecd9;font-size:14px;line-height:1.8;min-height:52px;white-space:pre-wrap}
-  #tutDialog .tut-next{position:absolute;right:18px;bottom:8px;font-size:12px;color:#b9ad92;
-    animation:tutBlink 1s infinite alternate}
+  #tutDialog .tut-next{position:absolute;right:18px;bottom:8px;font-size:16px;font-weight:700;color:#ffe9a8;
+    letter-spacing:1px;animation:tutBlink 1s infinite alternate}
+  #tutDialog .tut-skip{position:absolute;right:18px;top:10px;font-size:13px;font-weight:700;color:#ffd9a8;
+    background:rgba(120,40,20,.55);border:1px solid rgba(255,150,110,.45);border-radius:12px;
+    padding:4px 12px;cursor:pointer;transition:.15s}
+  #tutDialog .tut-skip:hover{background:rgba(180,60,25,.7);color:#fff;border-color:#ffb090}
   @keyframes tutBlink{from{opacity:.35}to{opacity:1}}
 
   /* ---------- 对局开场提示 ---------- */
@@ -809,11 +820,12 @@
   </div>
 </div>
 
-<div id="upgradeOverlay"><div class="uo-card" id="uoCard"></div><div class="uo-note" id="uoNote"></div></div>
+<div id="upgradeOverlay"><div class="uo-card" id="uoCard"></div><div class="uo-note" id="uoNote"></div><div class="uo-hint" id="uoHint">▼ 点击结束</div></div>
 
 <div id="tutWrap">
   <div id="tutSpotlight"></div>
   <div id="tutDialog">
+    <button id="tutSkip" class="tut-skip">跳过 ▸</button>
     <div class="tut-name" id="tutName"></div>
     <div class="tut-text" id="tutText"></div>
     <div class="tut-next">▼ 点击继续</div>
@@ -1064,8 +1076,8 @@ const GLYPHS = {
 };
 
 function artSVG(d){
-  if(CARD_ART[d.id]){
-    return `<div class="art-img" style="background-image:url('${CARD_ART[d.id]}')"></div>`;
+  if(CARD_ART[d.id] || d.art){
+    return `<div class="art-img" style="background-image:url('${CARD_ART[d.id] || d.art}')"></div>`;
   }
   const hero = HEROES[d.id] !== undefined;
   const enemy = ENEMY_CARDS[d.id] !== undefined;
@@ -1399,19 +1411,21 @@ function upgradeAnim(id){
   const ov = $('upgradeOverlay');
   const cardEl = $('uoCard');
   const note = $('uoNote');
+  const hint = $('uoHint');
   const t = cardTier(id);
   const st = cardStats(def, t);
   const prev = cardStats(def, t - 1);
   cardEl.innerHTML = cardFaceHTML({ def }, { side: heroDefOf(id) ? 'hero' : 'player', extra:'', data:'' });
   cardEl.classList.remove('shrink');
-  const flash = document.createElement('div');
-  flash.className = 'uo-flash';
-  cardEl.appendChild(flash);
-  const light = document.createElement('div');
-  light.className = 'uo-light';
-  cardEl.appendChild(light);
+  const frame = document.createElement('div');
+  frame.className = 'uo-frame';
+  cardEl.appendChild(frame);
+  const shine = document.createElement('div');
+  shine.className = 'uo-shine';
+  frame.appendChild(shine);
   note.classList.remove('show');
   note.textContent = '';
+  hint.classList.remove('show');
   ov.classList.add('on');
   setTimeout(() => {
     cardEl.classList.add('shrink');
@@ -1421,12 +1435,27 @@ function upgradeAnim(id){
     if(heroDefOf(id) && def.skill && def.skill.power && st.power !== prev.power) lines.push(`技能威力 ${prev.power} → ${st.power}`);
     note.textContent = lines.length ? `${def.name} 升阶至 ${t} 阶：${lines.join('　')}` : `${def.name} 升阶至 ${t} 阶`;
     note.classList.add('show');
-  }, 950);
-  setTimeout(() => {
-    ov.classList.remove('on');
-    cardEl.innerHTML = '';
-    note.classList.remove('show');
-  }, 3000);
+    hint.classList.add('show');
+    ov.addEventListener('click', function h(){
+      ov.removeEventListener('click', h);
+      ov.classList.remove('on');
+      cardEl.innerHTML = '';
+      note.classList.remove('show');
+      hint.classList.remove('show');
+    });
+  }, 1150);
+}
+
+function upgradeAnimClose(){
+  const ov = $('upgradeOverlay');
+  const cardEl = $('uoCard');
+  const note = $('uoNote');
+  const hint = $('uoHint');
+  if(!ov.classList.contains('on')) return;
+  ov.classList.remove('on');
+  cardEl.innerHTML = '';
+  note.classList.remove('show');
+  hint.classList.remove('show');
 }
 
 /* ================= 工具函数 ================= */
@@ -2442,9 +2471,16 @@ function renderGacha(){
     if(!r){ slots.push('<div class="gacha-card g-empty"></div>'); continue; }
     let def, side, tag;
     if(r.type === 'coin'){
-      def = { id:'era_coin', name: eraCoinName(), glyph:'coin', range:'ranged', gold:0, stamina:0, hp:1, atk:0, tint:'#ffd76a', desc:'可在商店使用的时代传送币。' };
-      side = 'player';
+      def = null;
       tag = `<span style="color:#ffd76a">🪙 ${eraCoinName()} ×${r.amount}</span>`;
+      slots.push(`<div class="gacha-card g-flip">
+        <div class="g-inner">
+          <div class="g-face g-back">${cardBackSVG()}</div>
+          <div class="g-face g-front coin-face"><img src="icons/coin_${eraCoinKey()}.png" alt=""><span>×${r.amount}</span></div>
+        </div>
+        <div class="tag">${tag}</div>
+      </div>`);
+      continue;
     } else if(r.type === 'card'){
       def = PLAYER_CARDS[r.id];
       side = heroDefOf(r.id) ? 'hero' : 'player';
@@ -2661,6 +2697,7 @@ function renderLog(){
 
 /* ================= 牌堆 / 抽牌动画 / 自适应缩放 ================= */
 let drawFx = 0;
+let cancelDraw = false;
 
 function cardBackSVG(){
   return `<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="150" fill="#16264a"/><rect x="4" y="4" width="92" height="142" fill="none" stroke="#c9a24b" stroke-width="2"/><rect x="9" y="9" width="82" height="132" fill="none" stroke="#8a6d3b" stroke-width="1"/><path d="M50 14 L86 75 L50 136 L14 75 Z" fill="none" stroke="#c9a24b" stroke-width="2"/><path d="M14 14 L86 136 M86 14 L14 136" stroke="#5d4a86" stroke-width="1" opacity=".7"/><circle cx="50" cy="75" r="12" fill="none" stroke="#f0d9a0" stroke-width="2"/><circle cx="50" cy="75" r="3" fill="#f0d9a0"/></svg>`;
@@ -2722,6 +2759,7 @@ function flyCard(def, from, to, dur, faceDown, cls){
 
 async function animateHandDraw(defs){
   if(!defs || !defs.length) return;
+  cancelDraw = false;
   drawFx++;
   renderBattle();
   await delay(80);
@@ -2731,10 +2769,11 @@ async function animateHandDraw(defs){
   const handEl = $('hand');
   for(let i = 0; i < defs.length; i++){
     await flyCard(defs[i], from, { x: to.x + (i - (defs.length - 1) / 2) * 24, y: to.y }, 540);
+    if(cancelDraw) break;
     if(handEl && state.hand.length) handEl.innerHTML = renderHandCards(oldCount + i + 1);
     await delay(60);
   }
-  drawFx--;
+  drawFx = Math.max(0, drawFx - 1);
   renderBattle();
 }
 
@@ -2757,9 +2796,9 @@ async function animateGachaPulls(){
   for(let i = 0; i < items.length; i++){
     const r = cards[i] ? cards[i].getBoundingClientRect() : null;
     const to = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: from.x, y: from.y + 70 };
-    const it = items[i];
-    const def = it.type === 'coin'
-      ? { id:'era_coin', name: eraCoinName(), glyph:'coin', range:'ranged', gold:0, stamina:0, hp:1, atk:0, tint:'#ffd76a', desc:'' }
+  const it = items[i];
+  const def = it.type === 'coin'
+      ? { id:'era_coin', name: eraCoinName(), glyph:'coin', range:'ranged', gold:0, stamina:0, hp:1, atk:0, tint:'#ffd76a', desc:'', art:'icons/coin_' + eraCoinKey() + '.png' }
       : PLAYER_CARDS[it.id];
     await flyCard(def, from, to, 460, true, 'dfx-lg');
     if(cards[i]) cards[i].style.opacity = '1';
@@ -3073,7 +3112,7 @@ function clearDragState(){
 }
 
 /* ================= 新手教程 ================= */
-const TUT_GRANDPA = '慈祥的老爷爷';
+const TUT_GRANDPA = '老村长';
 const TUT_HERO = '冒险家';
 let tutActive = false;
 let tutSteps = [];
@@ -3081,68 +3120,101 @@ let tutIdx = 0;
 let tutTyping = false;
 
 const TUT_SCRIPT = [
-  { name: TUT_GRANDPA, text: '哎哟喂……老夫在这片大陆上活了快一百年，今儿倒是头一回见着你这般打扮的年轻人。', focus: '#btnTutorial' },
-  { name: TUT_HERO, text: '老先生您好！我……其实我自己也说不上来，只记得一阵白光，就莫名其妙掉到这儿来了。', focus: '#homeSub' },
-  { name: TUT_GRANDPA, text: '呵呵，有趣有趣。看你这孩子满脸心切的样子，是想回家吧？老夫虽不晓得你来自何方，但相逢即是缘，便教你些在这片大陆活下去的门道。', focus: '#btnTutorial' },
+  { name: TUT_HERO, text: '唔……头好晕。这是哪儿？眼前这位老先生是……请问您是？' },
+  { name: TUT_HERO, text: '我这是到什么原始森林了吗？' },
+  { name: TUT_GRANDPA, text: '什么原始森林！这是我们冈加瓦那族人的地盘！老夫是这里的村长，村里人都唤我一声老村长。倒是你——你是怎么突然跑到这儿来的？' },
+  { name: TUT_HERO, text: '我也不知道……' },
+  { name: TUT_HERO, text: '其实我自己也说不上来，只记得一阵白光，就莫名其妙掉到这儿来了。' },
+  { name: TUT_GRANDPA, text: '白光？呵呵……老夫活了大半辈子，头一回见着你这样打扮的年轻人。这位"冒险家"，你怕不是从很远很远的地方来的吧？' },
+  { name: TUT_HERO, text: '远……是很远。我、我想回家！老先生，您知道该怎么回去吗？' },
+  { name: TUT_GRANDPA, text: '看你这么着急，老夫也不好袖手旁观。来，先把这村子里的家当认个遍，老夫再慢慢教你回家的门道。' },
   { name: TUT_GRANDPA, text: '来，先把这家里里外外认个遍。你眼前这个「开始游戏」，就是踏上征程的大门。', focus: '#btnStart' },
-  { name: TUT_GRANDPA, text: '点进去之后，会看到关卡选择。每一关都有对手等着你，打满十关，就能带着部落走向新的时代。', focus: '.level-list', action: next => { showView('levels'); renderLevelsView(); setTimeout(()=>next(), 120); } },
-  { name: TUT_HERO, text: '哦？也就是说我一路打过去就对了？那倒是不难理解。', focus: '#levelList' },
-  { name: TUT_GRANDPA, text: '正是。走，咱们回主屋，再看看别的家当。', focus: '#btnGacha', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '点进去，你会看到一片片历练之地，每一处都有对手等着你。', focus: '#btnStart', action: next => { showView('levels'); renderLevelsView(); setTimeout(()=>next(), 320); } },
+  { name: TUT_GRANDPA, text: '看，这就是历练之路。一路闯过去，说不定就能找到回家的路了。', focus: '.level-list' },
+  { name: TUT_HERO, text: '哦？也就是说我一路打过去就对了？那倒是不难理解。' },
+  { name: TUT_GRANDPA, text: '正是。走，咱们回主屋，再看看别的家当。', focus: '#btnLevelsBack', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
   { name: TUT_GRANDPA, text: '这个「抽卡页面」，是冒险家们招兵买马的地方。普通卡、英雄，还有老夫攒下的传送币，都从那儿来。', focus: '#btnGacha' },
-  { name: TUT_HERO, text: '抽卡？听起来像碰运气，不过运气也是实力的一部分嘛。', focus: '#gachaPack', action: next => { showView('gacha'); renderGacha(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '点进去，让你见识见识。', focus: '#btnGacha', action: next => { showView('gacha'); renderGacha(); setTimeout(()=>next(), 320); } },
   { name: TUT_GRANDPA, text: '看见这牌堆没有？点上面的按钮，卡牌就会一张张飞出来。抽到重复的卡牌也别扔，攒着能升阶，让卡牌越变越强。', focus: '#gachaPack' },
-  { name: TUT_GRANDPA, text: '好了，家当看完，回主屋去，还有一处地方得跟你交代。', focus: '#btnSaves', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_HERO, text: '抽卡？听起来像碰运气，不过运气也是实力的一部分嘛。' },
+  { name: TUT_GRANDPA, text: '好了，家当看完，回主屋去，还有一处地方得跟你交代。', focus: '#btnGachaBack', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
   { name: TUT_GRANDPA, text: '「存档管理」——冒险家们最要紧的行囊。最多能存四份，各走各的路，互不相欠。', focus: '#btnSaves' },
-  { name: TUT_HERO, text: '那就存一份，免得我哪天走丢了连家都找不着。', focus: '#saveList', action: next => { showView('saves'); renderSaves(); setTimeout(()=>next(), 350); } },
-  { name: TUT_GRANDPA, text: '存好档，心里就踏实了。走，再带你去看看你出征前要打点的「选卡」——就是主屋左边那个箭头。', focus: '#btnSlideDeck', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
-  { name: TUT_GRANDPA, text: '点这个左箭头，就进到选卡页面啦。左边是你选中的英雄，中间是这一局要带的卡组。', focus: '#btnSlideDeck', action: next => { showView('deck'); renderDeck(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '进去存一份，免得你哪天走丢了连家都找不着。', focus: '#btnSaves', action: next => { showView('saves'); renderSaves(); setTimeout(()=>next(), 320); } },
+  { name: TUT_HERO, text: '那就存一份，免得我哪天走丢了连家都找不着。', focus: '#saveList' },
+  { name: TUT_GRANDPA, text: '存好档，心里就踏实了。走，再带你去看看你出征前要打点的「选卡」。', focus: '#btnSavesBack', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '选卡就在主屋左边那个箭头那儿。', focus: '#btnSlideDeck' },
+  { name: TUT_GRANDPA, text: '点这个左箭头，就进到选卡页面啦。', focus: '#btnSlideDeck', action: next => { showView('deck'); renderDeck(); setTimeout(()=>next(), 320); } },
+  { name: TUT_GRANDPA, text: '左边这个框，是你选中的英雄。英雄数值更高、成长更快，还带着独特的技能，是战场上最可靠的伙伴。', focus: '.hero-deck-box' },
+  { name: TUT_HERO, text: '这英雄看着就厉害！那我该带谁上场呢？' },
   { name: TUT_GRANDPA, text: '下面是你的卡牌收藏，抽到的新卡都会出现在这里。每张卡底下那条黄条，就是升阶的进度，攒够重复卡就能升阶。', focus: '.collection' },
-  { name: TUT_HERO, text: '明白了！选好卡牌，就能去挑战关卡了。那……我要怎样才能回到原来的世界呢？', focus: '#heroDeckSlot' },
-  { name: TUT_GRANDPA, text: '哎……说到这个，老夫知道的其实也少得可怜。只听说，想要离开这片土地，怕是非找到魔王不可。', focus: '#btnStart', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_GRANDPA, text: '选好卡牌，咱们就该上路了。', focus: '#btnSlideHome', action: next => { showView('home'); renderHome(); setTimeout(()=>next(), 350); } },
+  { name: TUT_HERO, text: '那……我要怎样才能回到原来的世界呢？' },
+  { name: TUT_GRANDPA, text: '哎……说到这个，老夫知道的其实也少得可怜。只听说，想要离开这片土地，怕是非找到魔王不可。', focus: '#btnStart' },
   { name: TUT_GRANDPA, text: '老夫年轻时，偶然遇见一位有幸从魔窟里逃回来的人。他说那魔王手中握着一门术法，能打开通往另一层位面的通路。', focus: '#homeSub' },
   { name: TUT_GRANDPA, text: '老夫观你这孩子，眉眼之间确实不像这世间之人。既然你心切想要回家，老夫便陪你走这一程罢。', focus: '#btnStart' },
   { name: TUT_GRANDPA, text: '不过话说在前头，前路凶险，你可要想清楚了再上路。', focus: '#btnStart' },
-  { name: TUT_HERO, text: '想清楚了！不管前面是什么，我都要试试看！', focus: '#btnStart' },
-  { name: TUT_GRANDPA, text: '好！有志气。那咱们这就启程——第一关，老夫先给你搭把手。', focus: '#btnStart', action: next => {
+  { name: TUT_HERO, text: '想清楚了！不管前面是什么，我都要试试看！' },
+  { name: TUT_GRANDPA, text: '好！有志气。那咱们这就启程——第一道关卡，老夫先给你搭把手。', focus: '#btnStart', action: next => {
     tutEnd();
     startTutorialLevel(0);
     next();
   } }
 ];
 
+let tutLastFocus = '';
 function tutFocus(selector){
   const sp = $('tutSpotlight');
   const el = selector ? document.querySelector(selector) : null;
-  if(el){
-    const r = el.getBoundingClientRect();
-    sp.style.left = (r.left - 10) + 'px';
-    sp.style.top = (r.top - 10) + 'px';
-    sp.style.width = (r.width + 20) + 'px';
-    sp.style.height = (r.height + 20) + 'px';
-  } else {
-    sp.style.left = '-10%'; sp.style.top = '-10%';
-    sp.style.width = '120%'; sp.style.height = '120%';
+  if(!el){
+    sp.style.display = 'none';
+    tutLastFocus = '';
+    return;
   }
+  const r = el.getBoundingClientRect();
+  const vw = window.innerWidth || 1280, vh = window.innerHeight || 800;
+  if(!r.width || !r.height || r.right < 0 || r.bottom < 0 || r.left > vw || r.top > vh){
+    sp.style.display = 'none';
+    tutLastFocus = '';
+    return;
+  }
+  const key = 'el:' + selector;
+  if(key === tutLastFocus) return;
+  tutLastFocus = key;
+  sp.style.display = '';
+  sp.style.left = (r.left - 10) + 'px';
+  sp.style.top = (r.top - 10) + 'px';
+  sp.style.width = (r.width + 20) + 'px';
+  sp.style.height = (r.height + 20) + 'px';
 }
 
+let tutTimer = null;
 function tutType(text, name, done){
   $('tutName').textContent = name;
   const el = $('tutText');
   el.textContent = '';
   tutTyping = true;
+  if(tutTimer) clearInterval(tutTimer);
   let i = 0;
-  const timer = setInterval(() => {
+  tutTimer = setInterval(() => {
     el.textContent = text.slice(0, ++i);
     if(i >= text.length){
-      clearInterval(timer);
+      clearInterval(tutTimer);
+      tutTimer = null;
       tutTyping = false;
       if(done) done();
     }
   }, 32);
 }
 
+function tutFinishType(){
+  if(tutTimer){ clearInterval(tutTimer); tutTimer = null; }
+  tutTyping = false;
+  const step = tutLines.length ? tutLines[tutLineIdx - 1] : tutSteps[tutIdx];
+  if(step && step.text) $('tutText').textContent = step.text;
+}
+
 function runTutStep(step){
-  tutFocus(step.focus || null);
+  if(step.focus !== undefined) tutFocus(step.focus);
   tutType(step.text, step.name || TUT_GRANDPA, null);
 }
 
@@ -3155,6 +3227,8 @@ function tutNext(){
 function tutBegin(){
   if(tutActive) return;
   tutActive = true;
+  tutLastFocus = '';
+  $('tutSpotlight').style.display = '';
   $('tutWrap').classList.add('active');
   showView('home');
   renderHome();
@@ -3167,6 +3241,8 @@ function tutEnd(){
   tutActive = false;
   tutSteps = [];
   tutLines = [];
+  tutLastFocus = '';
+  if(tutTimer){ clearInterval(tutTimer); tutTimer = null; }
   $('tutWrap').classList.remove('active');
   $('tutSpotlight').style.cssText = '';
   $('tutText').textContent = '';
@@ -3188,24 +3264,46 @@ function tutLineShow(){
     return;
   }
   const l = tutLines[tutLineIdx++];
-  tutFocus(l.focus || null);
+  if(l.focus !== undefined) tutFocus(l.focus);
   tutType(l.text, l.name || TUT_GRANDPA, null);
 }
 function tutPlayLines(lines, done){
   tutLines = lines.slice();
   tutLineIdx = 0;
   tutLineDone = done;
+  tutLastFocus = '';
+  $('tutSpotlight').style.display = 'none';
   tutActive = true;
   $('tutWrap').classList.add('active');
   tutLineShow();
 }
 
 $('tutDialog').addEventListener('click', () => {
-  if(!tutActive || tutTyping) return;
+  if(!tutActive) return;
+  if(tutTyping){ tutFinishType(); return; }
   if(tutLines.length){ tutLineShow(); return; }
   const step = tutSteps[tutIdx];
   if(step && step.action) step.action(tutNext);
   else tutNext();
+});
+$('tutSkip').addEventListener('click', () => {
+  if(!tutActive) return;
+  if(tutTimer){ clearInterval(tutTimer); tutTimer = null; }
+  tutTyping = false;
+  if(tutLines.length){
+    const d = tutLineDone;
+    tutLines = [];
+    tutLineDone = null;
+    tutActive = false;
+    $('tutWrap').classList.remove('active');
+    $('tutSpotlight').style.cssText = '';
+    $('tutText').textContent = '';
+    $('tutName').textContent = '';
+    if(d) d();
+    return;
+  }
+  tutEnd();
+  startTutorialLevel(0);
 });
 $('btnTutorial').addEventListener('click', () => tutBegin());
 
@@ -3348,7 +3446,7 @@ $('saveList').addEventListener('click', e => {
   if(saves.slots[slot]) loadSave(slot);
   else createSave(slot);
 });
-$('exitBtn').addEventListener('click', () => showView('home'));
+$('exitBtn').addEventListener('click', () => { cancelDraw = true; drawFx = 0; showView('home'); });
 
 $('levelList').addEventListener('click', e => {
   const row = e.target.closest('.level-row');
@@ -3650,12 +3748,14 @@ $('endTurnBtn').addEventListener('click', () => {
 $('infoPop').addEventListener('click', e => {
   if(e.target.closest('.info-close')) hideInfo();
 });
-$('restartBtn').addEventListener('click', () => newGame(state.level));
+$('restartBtn').addEventListener('click', () => { cancelDraw = true; drawFx = 0; newGame(state.level); });
 
 $('modalBtns').addEventListener('click', e => {
   const b = e.target.closest('button');
   if(!b) return;
   const act = b.dataset.act;
+  cancelDraw = true;
+  drawFx = 0;
   $('modal').classList.add('hidden');
   if(act === 'next') newGame(levelIndex + 1);
   else if(act === 'evolved') newGame(0);
